@@ -6,13 +6,13 @@ This repository is a container for a miscellaneous assortment of single script p
 
 ## chemical-equation-formatter
 
-This script is bound to a *Google Docs*. When run, it takes the text highlighted by the user and turns any *chemical equation like* pattern and formats it accordingly. For example, 
+This script is bound to a *Google Docs*. When run, it takes the text highlighted by the user and turns any *chemical equation like* pattern and formats it accordingly. 
 
->  BaCl2 (aq) + Na2SO4 (aq) → BaSO4 (s) + 2NaCl (aq)
+## Examples
 
-would become
-
-<blockquote>BaCl<sub>2</sub> <sub>(aq)</sub> + Na<sub>2</sub>SO<sub>4</sub> <sub>(aq)</sub> → BaSO<sub>4</sub> <sub>(s)</sub> + 2NaCl <sub>(aq)</sub></blockquote>
+| Initial Text | Becomes... |
+| --- | --- |
+| BaCl2 (aq) + Na2SO4 (aq) → BaSO4 (s) + 2NaCl (aq) | BaCl<sub>2</sub> <sub>(aq)</sub> + Na<sub>2</sub>SO<sub>4</sub> <sub>(aq)</sub> → BaSO<sub>4</sub> <sub>(s)</sub> + 2NaCl <sub>(aq)</sub> |
 
 ## make-folders-by-week
 
