@@ -40,7 +40,7 @@ This script is bound to a *Google Sheet*. It implements a solver for the game *M
 
 This script is bound to a *Google Doc*. When run, it looks at the whole document and turns and paragraph that starts with the pattern `{letter}:`, and makes the text have a specific color. As of now there is no driver function, so the function just uses `V` as the letter and ![#6495ED](https://via.placeholder.com/15/6495ed/000000?text=+) cornflowerblue as the color. 
 
-![It did not work.](https://assetsnffrgf-a.akamaihd.net/assets/m/2021080/univ/art/2021080_univ_lss_lg.jpg)
+[It did not work.](https://via.placeholder.com/15/6495ed/000000?text=+)
 
 ## organize-availability-survey-results
 
