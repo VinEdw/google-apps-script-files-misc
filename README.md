@@ -40,6 +40,10 @@ This script is bound to a *Google Docs*. When run, it looks at the whole documen
 
 This script is bound to a *Google Sheets*. When run, it takes the results for a survey and creates a sheet for each unique response for a given question. This sheet will have a `=QUERY()` formula added that will grab all the responses from the main response sheet (one linked to a *Google Form*) that have that specific answer choice. The `=QUERY()` will also sort the responses slightly. This was originally made to sort the student responses for a tutoring availability survey. The original add-on that was being used was breaking due to some answer choices having unescaped double quotes (" should go to "") and lengths exceeding the maximum allowed for sheet names (100 characters). 
 
+## spreadsheet-clear-button
+
+The script is bound to a *Google Sheets*. It is used to turn a checkbox in the spreadsheet into a button that, when pressed, can clear the specified ranges. It was originally used in this [spreadsheet](https://docs.google.com/spreadsheets/d/195ul3KdEFZaGhNWL1mMsM4DROljqJjMe1tDiTwqPwag/edit?usp=sharing), a table to help tally up the attendance at a *Zoom* meeting based on responses to an *Attendance Poll*. The concept of a checkbox button was used in other GAS projects.
+
 ## sudoku-solver
 
 This script is bound to a *Google Sheets*. It implements a tool that can solve sudoku puzzles input to it by the user. The solver is run within the [spreadsheet](https://docs.google.com/spreadsheets/d/1CF_d9LHpsUOCUEeweVw9jZAEDGYXQ1NMbZgUT7FlSko/edit?usp=sharing).
