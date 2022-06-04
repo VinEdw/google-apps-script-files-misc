@@ -6,7 +6,7 @@ This repository is a container for a miscellaneous assortment of single script p
 
 ## chemical-equation-formatter
 
-This script is bound to a *Google Docs*. When run, it takes the text highlighted by the user and turns any *chemical equation like* pattern and formats it accordingly. 
+This script is bound to a *Google Doc*. When run, it takes the text highlighted by the user and turns any *chemical equation like* pattern and formats it accordingly. 
 
 Examples: 
 
@@ -22,7 +22,7 @@ This script is bound to a *Google Form*. It is activated automatically when an e
 
 ## hybrid-meeting-av-scheduling-tool
 
-This script is bound to a *Google Sheets*. It has multiple functions that can be run to help with scheduling brothers who help out at the [meetings](https://www.jw.org/en/jehovahs-witnesses/meetings/video-kingdom-hall/) of Jehovah's Witnesses. Each person has the jobs they can do, as well as parts they have already been scheduled for. The goal is to schedule without any *conflicts*.
+This script is bound to a *Google Sheet*. It has multiple functions that can be run to help with scheduling brothers who help out at the [meetings](https://www.jw.org/en/jehovahs-witnesses/meetings/video-kingdom-hall/) of Jehovah's Witnesses. Each person has the jobs they can do, as well as parts they have already been scheduled for. The goal is to schedule without any *conflicts*.
 
 ## make-folders-by-week
 
@@ -30,24 +30,24 @@ This script is unbound. When run, it creates numbered folders for each week from
 
 ## mastermind-game-pvp
 
-This script is bound to a *Google Sheets*. It implements a multiplayer version of *Mastermind*, where up to 4 players can race to finish the same puzzle, or puzzles created for each other, first. The game is played within the [spreadsheet](https://docs.google.com/spreadsheets/d/1TbS8g0OFPeNBDlU8RlJDZjJ-mJ7ELOjlkFiQfrP_c7Y/edit?usp=sharing).
+This script is bound to a *Google Sheet*. It implements a multiplayer version of *Mastermind*, where up to 4 players can race to finish the same puzzle, or puzzles created for each other, first. The game is played within the [spreadsheet](https://docs.google.com/spreadsheets/d/1TbS8g0OFPeNBDlU8RlJDZjJ-mJ7ELOjlkFiQfrP_c7Y/edit?usp=sharing).
 
 ## mastermind-game-solver
 
-This script is bound to a *Google Sheets*. It implements a solver for the game *Mastermind*. After inputting the guesses made so far and their result, the *best* next guess is proposed. The solver is run within the [spreadsheet](https://docs.google.com/spreadsheets/d/1ZpNXu9WKU0gVewmiPm0RZIYGGJAD7vWg9oVf_-eFhW4/edit?usp=sharing).
+This script is bound to a *Google Sheet*. It implements a solver for the game *Mastermind*. After inputting the guesses made so far and their result, the *best* next guess is proposed. The solver is run within the [spreadsheet](https://docs.google.com/spreadsheets/d/1ZpNXu9WKU0gVewmiPm0RZIYGGJAD7vWg9oVf_-eFhW4/edit?usp=sharing).
 
 ## meeting-part-colorizer
 
-This script is bound to a *Google Docs*. When run, it looks at the whole document and turns and paragraph that starts with the pattern `{letter}:`, and makes the text have a specific color. As of now there is no driver function, so the function just uses `V` as the letter and <span style="color:cornflowerblue;">cornflowerblue</span> as the color. 
+This script is bound to a *Google Doc*. When run, it looks at the whole document and turns and paragraph that starts with the pattern `{letter}:`, and makes the text have a specific color. As of now there is no driver function, so the function just uses `V` as the letter and <span style="color:cornflowerblue;">cornflowerblue</span> as the color. 
 
 ## organize-availability-survey-results
 
-This script is bound to a *Google Sheets*. When run, it takes the results for a survey and creates a sheet for each unique response for a given question. This sheet will have a `=QUERY()` formula added that will grab all the responses from the main response sheet (one linked to a *Google Form*) that have that specific answer choice. The `=QUERY()` will also sort the responses slightly. This was originally made to sort the student responses for a tutoring availability survey. The original add-on that was being used was breaking due to some answer choices having unescaped double quotes (" should go to "") and lengths exceeding the maximum allowed for sheet names (100 characters). 
+This script is bound to a *Google Sheet*. When run, it takes the results for a survey and creates a sheet for each unique response for a given question. This sheet will have a `=QUERY()` formula added that will grab all the responses from the main response sheet (one linked to a *Google Form*) that have that specific answer choice. The `=QUERY()` will also sort the responses slightly. This was originally made to sort the student responses for a tutoring availability survey. The original add-on that was being used was breaking due to some answer choices having unescaped double quotes (" should go to "") and lengths exceeding the maximum allowed for sheet names (100 characters). 
 
 ## spreadsheet-clear-button
 
-The script is bound to a *Google Sheets*. It is used to turn a checkbox in the spreadsheet into a button that, when pressed, can clear the specified ranges. It was originally used in this [spreadsheet](https://docs.google.com/spreadsheets/d/195ul3KdEFZaGhNWL1mMsM4DROljqJjMe1tDiTwqPwag/edit?usp=sharing), a table to help tally up the attendance at a *Zoom* meeting based on responses to an *Attendance Poll*. The concept of a checkbox button was used in other GAS projects.
+The script is bound to a *Google Sheet*. It is used to turn a checkbox in the spreadsheet into a button that, when pressed, can clear the specified ranges. It was originally used in this [spreadsheet](https://docs.google.com/spreadsheets/d/195ul3KdEFZaGhNWL1mMsM4DROljqJjMe1tDiTwqPwag/edit?usp=sharing), a table to help tally up the attendance at a *Zoom* meeting based on responses to an *Attendance Poll*. The concept of a checkbox button was used in other GAS projects.
 
 ## sudoku-solver
 
-This script is bound to a *Google Sheets*. It implements a tool that can solve sudoku puzzles input to it by the user. The solver is run within the [spreadsheet](https://docs.google.com/spreadsheets/d/1CF_d9LHpsUOCUEeweVw9jZAEDGYXQ1NMbZgUT7FlSko/edit?usp=sharing).
+This script is bound to a *Google Sheet*. It implements a tool that can solve sudoku puzzles input to it by the user. The solver is run within the [spreadsheet](https://docs.google.com/spreadsheets/d/1CF_d9LHpsUOCUEeweVw9jZAEDGYXQ1NMbZgUT7FlSko/edit?usp=sharing).
