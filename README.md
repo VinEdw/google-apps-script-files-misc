@@ -24,6 +24,10 @@ This script is bound to a *Google Sheets*. It has multiple functions that can be
 
 This script is unbound. When run, it creates numbered folders for each week from the start date to the end date. This was originally made to help a friend who works at an afterschool program prepare *Google Drive* folders for the year. 
 
+## mastermind-game-pvp
+
+This script is bound to a *Google Sheets*. It implements a multiplayer version of *Mastermind*, where up to 4 players can race to finish the same puzzle, or puzzles created for each other, first. The game is played within the [spreadsheet](https://docs.google.com/spreadsheets/d/1TbS8g0OFPeNBDlU8RlJDZjJ-mJ7ELOjlkFiQfrP_c7Y/edit?usp=sharing).
+
 ## meeting-part-colorizer
 
 This script is bound to a *Google Docs*. When run, it looks at the whole document and turns and paragraph that starts with the pattern `{letter}:`, and makes the text have a specific color. As of now there is no driver function, so the function just uses `V` as the letter and <span style="color:cornflowerblue;">cornflowerblue</span> as the color. 
