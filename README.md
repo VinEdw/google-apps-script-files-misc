@@ -20,6 +20,10 @@ Examples:
 
 This script is unbound. When run, it creates numbered folders for each week from the start date to the end date. This was originally made to help a friend who works at an afterschool program prepare *Google Drive* folders for the year. 
 
+## meeting-part-colorizer
+
+This script is bound to a *Google Docs*. When run, it looks at the whole document and turns and paragraph that starts with the pattern `{letter}:`, and makes the text have a specific color. As of now there is no driver function, so the function just uses `V` as the letter and *cornflower blue* as the color. 
+
 ## organize-availability-survey-results
 
 This script is bound to a *Google Sheets*. When run, it takes the results for a survey and creates a sheet for each unique response for a given question. This sheet will have a `=QUERY()` formula added that will grab all the responses from the main response sheet (one linked to a *Google Form*) that have that specific answer choice. The `=QUERY()` will also sort the responses slightly. This was originally made to sort the student responses for a tutoring availability survey. The original add-on that was being used was breaking due to some answer choices having unescaped double quotes (" should go to "") and lengths exceeding the maximum allowed for sheet names (100 characters). 
