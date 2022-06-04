@@ -17,3 +17,8 @@ would become
 ## make-folders-by-week
 
 This script is unbound. When run, it creates numbered folders for each week from the start date to the end date. This was originally made to help a friend who works at an afterschool program prepare *Google Drive* folders for the year. 
+
+## organize-availability-survey-results
+
+This script is bound to a *Google Sheets*. When run, it takes the results for a survey and creates a sheet for each unique response for a given question. This sheet will have a `=QUERY()` formula added that will grab all the responses from the main response sheet (one linked to a *Google Form*) that have that specific answer choice. The `=QUERY()` will also sort the responses slightly. This was originally made to sort the student responses for a tutoring availability survey. The original add-on that was being used was breaking due to some answer choices having unescaped double quotes (" should go to "") and lengths exceeding the maximum allowed for sheet names (100 characters). 
+
