@@ -16,6 +16,10 @@ Examples:
 | Ba 2+ (aq) + 2Cl - (aq) + 2 Na + (aq) + SO4 2- (aq) → BaSO4 (s) + 2Na + (aq) + 2Cl - (aq) | Ba <sup>2+</sup> <sub>(aq)</sub> + 2Cl <sup>-</sup> <sub>(aq)</sub> + 2 Na <sup>+</sup> <sub>(aq)</sub> + SO4 <sup>2-</sup> <sub>(aq)</sub> → BaSO<sub>4</sub> <sub>(s)</sub> + 2Na + <sub>(aq)</sub> + 2Cl <sup>-</sup> <sub>(aq)</sub> |
 | Ba 2+ (aq) + SO4 2- (aq) → BaSO4 (s) | Ba <sup>2+</sup> <sub>(aq)</sub> + SO<sub>4</sub> <sup>2-</sup> <sub>(aq)</sub> → BaSO<sub>4</sub> <sub>(s)</sub> |
 
+## hybrid-meeting-av-scheduling-tool
+
+This script is bound to a *Google Sheets*. It has multiple functions that can be run to help with scheduling brothers who help out at the [meetings](https://www.jw.org/en/jehovahs-witnesses/meetings/video-kingdom-hall/) of Jehovah's Witnesses. Each person has the jobs they can do, as well as parts they have already been scheduled for. The goal is to schedule without any *conflicts*.
+
 ## make-folders-by-week
 
 This script is unbound. When run, it creates numbered folders for each week from the start date to the end date. This was originally made to help a friend who works at an afterschool program prepare *Google Drive* folders for the year. 
