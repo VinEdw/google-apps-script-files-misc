@@ -22,7 +22,7 @@ This script is unbound. When run, it creates numbered folders for each week from
 
 ## meeting-part-colorizer
 
-This script is bound to a *Google Docs*. When run, it looks at the whole document and turns and paragraph that starts with the pattern `{letter}:`, and makes the text have a specific color. As of now there is no driver function, so the function just uses `V` as the letter and <span style="color: cornflowerblue">cornflowerblue</span> as the color. 
+This script is bound to a *Google Docs*. When run, it looks at the whole document and turns and paragraph that starts with the pattern `{letter}:`, and makes the text have a specific color. As of now there is no driver function, so the function just uses `V` as the letter and <span style="color:cornflowerblue;">cornflowerblue</span> as the color. 
 
 ## organize-availability-survey-results
 
