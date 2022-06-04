@@ -38,7 +38,7 @@ This script is bound to a *Google Sheet*. It implements a solver for the game *M
 
 ## meeting-part-colorizer
 
-This script is bound to a *Google Doc*. When run, it looks at the whole document and turns and paragraph that starts with the pattern `{letter}:`, and makes the text have a specific color. As of now there is no driver function, so the function just uses `V` as the letter and ![:blue_square:](https://via.placeholder.com/15/6495ed/000000?text=+) cornflowerblue as the color. 
+This script is bound to a *Google Doc*. When run, it looks at the whole document and turns and paragraph that starts with the pattern `{letter}:`, and makes the text have a specific color. As of now there is no driver function, so the function just uses `V` as the letter and ![🟦](https://via.placeholder.com/15/6495ed/000000?text=+) cornflowerblue as the color. 
 
 ## organize-availability-survey-results
 
