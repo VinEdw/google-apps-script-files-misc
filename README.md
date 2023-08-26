@@ -20,6 +20,10 @@ Examples:
 
 This script is bound to a *Google Form*. It is activated automatically when an editor opens the form. It deletes all responses on the form that are older than 14 days. This was originally made to help a friend who works at an afterschool program implement an item checkout and return system. The script would keep the responses from getting cluttered. The age needed before deletion could be easily adapted for use in other projects.
 
+## form-submission-audio-alert
+
+This script, and its companion html document, are bound to a *Google Sheet* with a linked *Google Form*. Once the sidebar is opened (and kept open), it checks every 30 seconds to see if the total number of form responses has changed. If so, it logs and the current time and new count. In addition, it plays a short audio file. This audio file is saved in Google Drive and shared so that anyone can view.
+
 ## hybrid-meeting-av-scheduling-tool
 
 This script is bound to a *Google Sheet*. It has multiple functions that can be run to help with scheduling brothers who help out at the [meetings](https://www.jw.org/en/jehovahs-witnesses/meetings/video-kingdom-hall/) of Jehovah's Witnesses. Each person has the jobs they can do, as well as parts they have already been scheduled for. The goal is to schedule without any *conflicts*.

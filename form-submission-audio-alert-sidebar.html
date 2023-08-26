@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+    <h1>Submission Watcher</h1>
+    <h2>Logs</h2>
+    <ul id="logs"></ul>
+    <audio src="https://docs.google.com/uc?export=download&id=1WU2Irqd5I9W8WURGd2A2TyIEpmgF4f_z"></audio>
+    <script>
+      const audio = document.querySelector("audio");
+      const logs = document.querySelector("ul#logs");
+      let responseCount;
+      
+      function startLoop(count) {
+        responseCount = count;
+        createLog(responseCount, false);
+        // Check the form to see if the response count has changed every *delay* milliseconds
+        const delay = 30 * 1000;
+        setInterval(() => {
+          google.script.run.withSuccessHandler(compareCounts).getResponseCount();
+        }, delay)
+      }
+      
+      function compareCounts(count) {
+        if (responseCount !== count) {
+          createLog(count, true);
+          responseCount = count;
+        }
+      }
+      
+      function createLog(count, playSound) {
+        const li = document.createElement("li");
+        const time = new Date(Date.now());
+        const timeStr = time.toTimeString()
+          .split(":")
+          .slice(0, 2)
+          .join(":");
+        li.textContent = `${timeStr} - ${count} total responses`;
+        logs.appendChild(li);
+        if (playSound) {
+          audio.play();
+        }
+      }
+      
+      google.script.run.withSuccessHandler(startLoop).getResponseCount();
+    </script>
+  </body>
+</html>
