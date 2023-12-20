@@ -258,6 +258,21 @@ function getChildFileRegex(folder, regex) {
 }
 
 /**
+ * @param {DriveApp.File} file
+ * @returns {boolean}
+ */
+function allowAnyoneViewFile(file) {
+  try {
+    // Set the sharing permission (anyone with link can view)
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return true;
+  }
+  catch {
+    return false;
+  }
+}
+
+/**
  * @param {Tutor} tutor
  */
 function createPaperwork(tutor) {
@@ -331,8 +346,7 @@ function createLinkedSheet(formFile, form, folder) {
   const file = DriveApp.getFileById(linkedSS.getId())
   file.moveTo(folder);
   form.setDestination(FormApp.DestinationType.SPREADSHEET, linkedSS.getId());
-  // Set the sharing permission (anyone with link can view)
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  allowAnyoneViewFile(file);
   // Delete the empty default sheet
   let emptySheet = linkedSS.getSheetByName("Sheet1");
   linkedSS.deleteSheet(emptySheet);
@@ -592,8 +606,7 @@ function createPaperworkDoc(tutor, tutorFolder, templateFolder, timeRecordLinks,
     }
   }
 
-  // Set the sharing permission (anyone with link can view)
-  paperwork.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  allowAnyoneViewFile(paperwork);
 
   return paperwork.getUrl();
 }
@@ -656,10 +669,8 @@ function createAssignmentLetters(tutor, tutorFolder, templateFolder, availabilit
 
     links.push(assignmentLetter.getUrl());
     
-    // Set the sharing permission (anyone with link can view)
-    assignmentLetter.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    allowAnyoneViewFile(assignmentLetter);
   }
-
 
   return links;
 }
