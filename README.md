@@ -77,6 +77,15 @@ The `=QUERY()` will also sort the responses slightly.
 This was originally made to sort the student responses for a tutoring availability survey.
 The original add-on that was being used was breaking due to some answer choices having unescaped double quotes (" should go to "") and lengths exceeding the maximum allowed for sheet names (100 characters).
 
+## paperwork-automation
+
+This project was made to create paperwork docs for tutors at a community college.
+This script is bound to a *Google Sheet*.
+It also relies on a having two sibling folders ("Paperwork Submissions" & "Templates").
+The "Paperwork Submissions" folder should have two child folders ("HUM" & "STEM").
+Once all the data in the spreadsheet is filled out and the templates are adjusted to the current semester, the script can be run to create paperwork docs customized to a specific tutor.
+The script must be run once for each tutor, as this allows flexibility in case new tutors are added.
+
 ## spreadsheet-clear-button
 
 The script is bound to a *Google Sheet*.
