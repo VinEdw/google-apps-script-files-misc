@@ -437,7 +437,7 @@ function createTimeRecord(tutor, tutorFolder, templateFolder) {
         dutySelect.setChoices(choices);
       }
     }
-    else if (title === "Week - Select the week") {
+    else if (title === "Week") {
       let weekSelect = item.asListItem();
       createWeekDropdown(weekSelect);
     }
