@@ -413,6 +413,8 @@ function createTimeRecord(tutor, tutorFolder, templateFolder) {
   let newTitle = title.replaceAll("{tutorName}", tutor.name);
   timeRecordForm.setTitle(newTitle);
 
+  // Save the index of the 'Total number of hours' question
+  let hoursQuestionIdx;
   // Modify certain questions as needed
   const items = timeRecordForm.getItems();
   for (let item of items) {
@@ -441,10 +443,20 @@ function createTimeRecord(tutor, tutorFolder, templateFolder) {
       let weekSelect = item.asListItem();
       createWeekDropdown(weekSelect);
     }
+    else if (title === "Total number of hours") {
+      let hoursQuestion = item.asTextItem();
+      hoursQuestionIdx = hoursQuestion.getIndex();
+    }
   }
 
+  // Move the hours question 3 spaces back
+  // The question will be moved back to its original spot after the sheet is made
+  // This is done to adjust the column order in the linked spreadsheet
+  timeRecordForm.moveItem(hoursQuestionIdx, hoursQuestionIdx - 3);
   // Create a linked spreadsheet and save the url
   links.sheet = createLinkedSheet(timeRecord, timeRecordForm, tutorFolder)
+  // Move the hours question back to its original position
+  timeRecordForm.moveItem(hoursQuestionIdx - 3, hoursQuestionIdx);
   
   // Return the links
   return links;
