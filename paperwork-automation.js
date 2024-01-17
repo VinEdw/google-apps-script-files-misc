@@ -457,6 +457,16 @@ function createTimeRecord(tutor, tutorFolder, templateFolder) {
   links.sheet = createLinkedSheet(timeRecord, timeRecordForm, tutorFolder)
   // Move the hours question back to its original position
   timeRecordForm.moveItem(hoursQuestionIdx - 3, hoursQuestionIdx);
+  // Add week and month summary sheets & formulas to the spreadsheet
+  const timeRecordSS = SpreadsheetApp.openByUrl(links.sheet);
+  const weekFormula = `=QUERY('Form Responses 1'!A:J, "SELECT B, SUM(F) WHERE B IS NOT NULL GROUP BY B LABEL B 'Week', SUM(F) 'Hours'", 1)`;
+  const monthFormula = `=QUERY('Form Responses 1'!A:J, "SELECT MONTH(E)+1, SUM(F) WHERE E IS NOT NULL GROUP BY MONTH(E)+1 LABEL MONTH(E)+1 'Month', SUM(F) 'Hours'", 1)`;
+  timeRecordSS.insertSheet("Week Summary")
+    .getRange(1, 1)
+    .setFormula(weekFormula);
+  timeRecordSS.insertSheet("Month Summary")
+    .getRange(1, 1)
+    .setFormula(monthFormula);
   
   // Return the links
   return links;
