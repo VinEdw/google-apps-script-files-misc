@@ -489,7 +489,7 @@ function createAttendanceForm(tutor, tutorFolder, templateFolder) {
   // For each course, create a question
   for (const course of tutor.courses) {
     const courseStr = `${course.name} (${course.courseCRN}) ${course.professor.name} ${course.days} ${course.times}`;
-    const questionStr = courseStr + " - Select all students who attendend the group session:";
+    const questionStr = courseStr + " - Select all students who attended the group session:";
     const item = attendanceForm.addCheckboxItem();
     item.setTitle(questionStr);
     attendanceForm.moveItem(item.getIndex(), attendanceForm.getItems().length - 2)
