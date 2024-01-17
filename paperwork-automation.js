@@ -539,7 +539,8 @@ function createAvailabilitySurvey(tutor, tutorFolder, templateFolder) {
     tutorFolder
   );
   const surveyForm = FormApp.openByUrl(survey.getUrl());
-  links.form = surveyForm.getPublishedUrl();
+  links.viewForm = surveyForm.getPublishedUrl();
+  links.editForm = surveyForm.getEditUrl();
 
   // Set the new title to use the tutor name
   let title = surveyForm.getTitle();
@@ -610,7 +611,7 @@ function createPaperworkDoc(tutor, tutorFolder, templateFolder, timeRecordLinks,
   injectLink(body, "{attendanceSheet}", "Attendance Sheet", attendanceFormLinks.sheet);
   injectLink(body, "{timecardForm}", "Timecard Form", timeRecordLinks.form);
   injectLink(body, "{timecardSheet}", "Timecard Sheet", timeRecordLinks.sheet);
-  injectLink(body, "{studentAvailabilityForm}", "Student Availability Form", availabilitySurveyLinks.form);
+  injectLink(body, "{studentAvailabilityForm}", "Student Availability Form", availabilitySurveyLinks.editForm);
 
   // If there is only one assignment letter, then simply make one replacement
   // Otherwise, make a link for each professor
@@ -663,7 +664,7 @@ function createAssignmentLetters(tutor, tutorFolder, templateFolder, availabilit
     replaceDocText(body, "{tutorType}", courses[0].tutorType);
     replaceDocText(body, "{tutorName}", tutor.name);
     replaceDocText(body, "{groupSessionCRN}", courses[0].groupSessionCRN);
-    injectLink(body, "{availabilitySurvey}", "availability survey", availabilitySurveyLinks.form);
+    injectLink(body, "{availabilitySurvey}", "availability survey", availabilitySurveyLinks.viewForm);
     replaceDocText(body, "{lectureHours}", courses[0].lectureHours);
     replaceDocText(body, "{sessionHours}", courses[0].sessionHours);
     replaceDocText(body, "{prepHours}", courses[0].prepHours);
