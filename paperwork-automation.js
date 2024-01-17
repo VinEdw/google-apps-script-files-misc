@@ -531,7 +531,7 @@ function createAvailabilitySurvey(tutor, tutorFolder, templateFolder) {
   surveyForm.setDescription(newDescription);
 
   // Add the tutor as an editor for the form
-  survey.addEditor(tutor.email);
+  // survey.addEditor(tutor.email);
 
   // Return the links
   return links;
