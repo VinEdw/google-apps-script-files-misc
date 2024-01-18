@@ -509,16 +509,48 @@ function createAttendanceForm(tutor, tutorFolder, templateFolder) {
   }
 
   // For each course, create a question
+  // Save the index of the questions
+  const courseIdxs = [];
   for (const course of tutor.courses) {
     const courseStr = `${course.name} (${course.courseCRN}) ${course.professor.name} ${course.days} ${course.times}`;
     const questionStr = courseStr + " - Select all students who attended the group session:";
     const item = attendanceForm.addCheckboxItem();
     item.setTitle(questionStr);
     attendanceForm.moveItem(item.getIndex(), attendanceForm.getItems().length - 2)
+    courseIdxs.push(item.getIndex());
   }
 
   // Create a linked spreadsheet and save the url
   links.sheet = createLinkedSheet(attendance, attendanceForm, tutorFolder);
+  // Add attendance summary sheets with formulas to the spreadsheet
+  const attendanceSS = SpreadsheetApp.openByUrl(links.sheet);
+  const responseSheet = attendanceSS.getSheetByName("Form Responses 1");
+  for (let i = 0; i < tutor.courses.length; i++) {
+    const course = tutor.courses[i];
+    // Use the position of the question in the form to form to infer the column
+    const courseIdx = courseIdxs[i];
+    const courseCol = courseIdx + 2;
+    // Get the column letter(s) where student names are entered
+    const courseColLetter = responseSheet
+      .getRange(1, courseCol)
+      .getA1Notation()
+      .replace(/\d+/, "");
+    const sheetName = `${course.name} ${course.professor.name} (${course.courseCRN})`;
+    const sheet = attendanceSS.insertSheet(sheetName);
+    // Increase the width of the first column
+    sheet.setColumnWidth(1, 300);
+    // Set the column headers
+    sheet.getRange(1, 1, 1, 3).setValues([["Student", "Total Hours", "Total Sessions"]]);
+    // Set the student list formula
+    const studentFormula = `=SORT(UNIQUE(FLATTEN(IFERROR(ARRAYFORMULA(SPLIT('Form Responses 1'!${courseColLetter}2:${courseColLetter}, ", ", FALSE))))), 1, TRUE)`;
+    sheet.getRange(2, 1).setFormula(studentFormula);
+    // Set the total hour calculating formula, setting the number format to 2 decimal places
+    const hourFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(24*TIMEVALUE(FILTER('Form Responses 1'!$F$2:$F, FIND(A2, 'Form Responses 1'!$${courseColLetter}$2:$${courseColLetter})) - FILTER('Form Responses 1'!$E$2:$E, FIND(A2, 'Form Responses 1'!$${courseColLetter}$2:$${courseColLetter}))))))`;
+    sheet.getRange(2, 2).setFormula(hourFormula).setNumberFormat("0.00").copyTo(sheet.getRange(2, 2, 500));
+    // Set the total session count formula
+    const sessionFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(COUNT(FILTER('Form Responses 1'!$A$2:$A, FIND(A2, 'Form Responses 1'!$${courseColLetter}$2:$${courseColLetter}))))))`;
+    sheet.getRange(2, 3).setFormula(sessionFormula).copyTo(sheet.getRange(2, 3, 500));
+  }
   
   // Return the links
   return links;
