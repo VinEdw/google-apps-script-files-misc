@@ -501,7 +501,7 @@ function createAttendanceForm(tutor, tutorFolder, templateFolder) {
   // Set the week select question
   for (let item of attendanceForm.getItems()) {
     let title = item.getTitle();
-    if (title === "Week - Select the week") {
+    if (title === "Week") {
       let weekSelect = item.asListItem();
       createWeekDropdown(weekSelect);
       break;
