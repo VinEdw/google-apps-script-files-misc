@@ -118,24 +118,25 @@ class Professor extends Person {
 
 class Course {
   /**
-   * @param {string} tutorType
-   * @param {string} subject
-   * @param {string} name
-   * @param {number} courseCRN
-   * @param {number} groupSessionCRN
-   * @param {string} days
-   * @param {string} times
-   * @param {string} location
-   * @param {Professor} professor
-   * @param {string} lectureHours
-   * @param {string} sessionHours
-   * @param {string} prepHours
-   * @param {string} observationHours
-   * @param {string} trainingHours
-   * @param {string} totalHours
-   * @param {SpreadsheetApp.Range} assignmentLetterCell
+   * @param {Object} param
+   * @param {string} param.tutorType
+   * @param {string} param.subject
+   * @param {string} param.name
+   * @param {number} param.courseCRN
+   * @param {number} param.groupSessionCRN
+   * @param {string} param.days
+   * @param {string} param.times
+   * @param {string} param.location
+   * @param {Professor} param.professor
+   * @param {string} param.lectureHours
+   * @param {string} param.sessionHours
+   * @param {string} param.prepHours
+   * @param {string} param.observationHours
+   * @param {string} param.trainingHours
+   * @param {string} param.totalHours
+   * @param {SpreadsheetApp.Range} param.assignmentLetterCell
    */
-  constructor(tutorType, subject, name, courseCRN, groupSessionCRN, days, times, location, professor, lectureHours, sessionHours, prepHours, observationHours, trainingHours, totalHours, assignmentLetterCell) {
+  constructor({tutorType, subject, name, courseCRN, groupSessionCRN, days, times, location, professor, lectureHours, sessionHours, prepHours, observationHours, trainingHours, totalHours, assignmentLetterCell} = {}) {
     this.tutorType = tutorType;
     this.subject = subject;
     this.name = name;
@@ -191,24 +192,24 @@ function getTutor(name) {
     .map((x, idx) => [x, idx])
     .filter(x => x[0][courseCols.tutor] === name)
     .map(x => {
-      return new Course(
-        x[0][courseCols.tutorType],
-        x[0][courseCols.subject],
-        x[0][courseCols.courseName],
-        x[0][courseCols.courseCRN],
-        x[0][courseCols.groupSessionCRN],
-        x[0][courseCols.days],
-        x[0][courseCols.times],
-        x[0][courseCols.location],
-        getProfessor(x[0][courseCols.professor]),
-        x[0][courseCols.lectureHours],
-        x[0][courseCols.sessionHours],
-        x[0][courseCols.prepHours],
-        x[0][courseCols.observationHours],
-        x[0][courseCols.trainingHours],
-        x[0][courseCols.totalHours],
-        courseSheet.getRange(x[1] + 1, courseCols.assignmentLetter + 1)
-      )
+      return new Course({
+        tutorType: x[0][courseCols.tutorType],
+        subject: x[0][courseCols.subject],
+        name: x[0][courseCols.courseName],
+        courseCRN: x[0][courseCols.courseCRN],
+        groupSessionCRN: x[0][courseCols.groupSessionCRN],
+        days: x[0][courseCols.days],
+        times: x[0][courseCols.times],
+        location: x[0][courseCols.location],
+        professor: getProfessor(x[0][courseCols.professor]),
+        lectureHours: x[0][courseCols.lectureHours],
+        sessionHours: x[0][courseCols.sessionHours],
+        prepHours: x[0][courseCols.prepHours],
+        observationHours: x[0][courseCols.observationHours],
+        trainingHours: x[0][courseCols.trainingHours],
+        totalHours: x[0][courseCols.totalHours],
+        assignmentLetterCell: courseSheet.getRange(x[1] + 1, courseCols.assignmentLetter + 1),
+      })
     })
 
   // Return a tutor object
