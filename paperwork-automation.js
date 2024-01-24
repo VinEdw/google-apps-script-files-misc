@@ -177,12 +177,19 @@ function getTutor(name) {
   const SS = SpreadsheetApp.getActiveSpreadsheet();
 
   // Get the spreadsheet row of the tutor with the input name
-  const tutorRow = SS.getSheetByName("Tutors")
+  const tutorRows = SS.getSheetByName("Tutors")
     .getRange(1, 1)
     .getDataRegion()
     .getValues()
     .filter(x => x[tutorCols.name] === name);
-  let email = tutorRow[0][tutorCols.email];
+  if (tutorRows.length === 0) {
+    throw new Error("Tutor name not found")
+  }
+  else if (tutorRows.length > 1) {
+    throw new Error("Tutor name listed multiple times it 'Tutors' sheet")
+  }
+  const tutorRow = tutorRows[0]
+  let email = tutorRow[tutorCols.email];
 
   // Get the courses that this tutor is assigned to
   const courseSheet = SS.getSheetByName("Courses");
