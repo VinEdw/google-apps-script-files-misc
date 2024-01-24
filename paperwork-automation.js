@@ -553,21 +553,29 @@ function createAttendanceForm(tutor, tutorFolder, templateFolder) {
       .getRange(1, courseCol)
       .getA1Notation()
       .replace(/\d+/, "");
+    const courseColA1 = `'Form Responses 1'!$${courseColLetter}$2:$${courseColLetter}`
     const sheetName = `${course.name} ${course.professor.name} (${course.courseCRN})`;
     const sheet = attendanceSS.insertSheet(sheetName);
     // Increase the width of the first column
     sheet.setColumnWidth(1, 300);
     // Set the column headers
-    sheet.getRange(1, 1, 1, 3).setValues([["Student", "Total Hours", "Total Sessions"]]);
+    sheet.getRange(1, 1, 1, 3)
+      .setValues([["Student", "Total Hours", "Total Sessions"]]);
     // Set the student list formula
-    const studentFormula = `=SORT(UNIQUE(FLATTEN(IFERROR(ARRAYFORMULA(SPLIT('Form Responses 1'!${courseColLetter}2:${courseColLetter}, ", ", FALSE))))), 1, TRUE)`;
-    sheet.getRange(2, 1).setFormula(studentFormula);
+    const studentFormula = `=SORT(UNIQUE(FLATTEN(IFERROR(ARRAYFORMULA(SPLIT(${courseColA1}, ", ", FALSE))))), 1, TRUE)`;
+    sheet.getRange(2, 1)
+      .setFormula(studentFormula);
     // Set the total hour calculating formula, setting the number format to 2 decimal places
-    const hourFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(24*TIMEVALUE(FILTER('Form Responses 1'!$F$2:$F, FIND(A2, 'Form Responses 1'!$${courseColLetter}$2:$${courseColLetter})) - FILTER('Form Responses 1'!$E$2:$E, FIND(A2, 'Form Responses 1'!$${courseColLetter}$2:$${courseColLetter}))))))`;
-    sheet.getRange(2, 2).setFormula(hourFormula).setNumberFormat("0.00").copyTo(sheet.getRange(2, 2, 500));
+    const hourFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(24*TIMEVALUE(FILTER('Form Responses 1'!$F$2:$F, FIND(A2, ${courseColA1})) - FILTER('Form Responses 1'!$E$2:$E, FIND(A2, ${courseColA1}))))))`;
+    sheet.getRange(2, 2)
+      .setFormula(hourFormula)
+      .setNumberFormat("0.00")
+      .copyTo(sheet.getRange(2, 2, 500));
     // Set the total session count formula
-    const sessionFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(COUNT(FILTER('Form Responses 1'!$A$2:$A, FIND(A2, 'Form Responses 1'!$${courseColLetter}$2:$${courseColLetter}))))))`;
-    sheet.getRange(2, 3).setFormula(sessionFormula).copyTo(sheet.getRange(2, 3, 500));
+    const sessionFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(COUNT(FILTER('Form Responses 1'!$A$2:$A, FIND(A2, ${courseColA1}))))))`;
+    sheet.getRange(2, 3)
+      .setFormula(sessionFormula)
+      .copyTo(sheet.getRange(2, 3, 500));
   }
   
   // Return the links
