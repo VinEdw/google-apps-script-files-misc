@@ -228,17 +228,24 @@ function getParentFolder(file) {
 }
 
 /**
+ * Return the folder with the given name inside the parent folder
+ * If create is true, create a folder with that name if it does not exist
  * @param {DriveApp.Folder} parent
  * @param {string} name
+ * @param {boolean} create
  * @returns {DriveApp.Folder}
  */
-function getChildFolder(parent, name) {
+function getChildFolder(parent, name, create = false) {
   const children = parent.getFolders();
   while (children.hasNext()) {
     let folder = children.next();
     if (folder.getName() === name) {
       return folder;
     }
+  }
+  if (create) {
+    let newFolder = parent.createFolder(name);
+    return newFolder;
   }
 }
 
@@ -282,13 +289,16 @@ function createPaperwork(tutor) {
   const parentFolder = getParentFolder(fileSS);
 
   // Create a folder for the tutor
-  const paperworkFolder = getChildFolder(parentFolder, "Paperwork Submissions");
-  const subjectFolder = getChildFolder(paperworkFolder, tutor.getSubject());
+  const paperworkFolder = getChildFolder(parentFolder, "Paperwork Submissions", true);
+  const subjectFolder = getChildFolder(paperworkFolder, tutor.getSubject(), true);
   const tutorFolderName = `${tutor.name}`;
   const tutorFolder = subjectFolder.createFolder(tutorFolderName);
 
   // Start duplicating and tailoring the files from the templates folder
   const templateFolder = getChildFolder(parentFolder, "Templates");
+  if (!templateFolder) {
+    throw new Error("'Templates' folder not found")
+  }
 
   // Create the time record form and its linked spreadsheet
   const timeRecordLinks = createTimeRecord(tutor, tutorFolder, templateFolder);
