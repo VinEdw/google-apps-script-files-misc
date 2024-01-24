@@ -346,6 +346,7 @@ function createSchedule() {
 
               if (c % 10000 === 0) {
                 console.log(c);
+                console.log(scheduleArr);
                 printSchedule();
               }
 
@@ -354,6 +355,10 @@ function createSchedule() {
                 if (checkFinished()) {
                   break outerLoop;
                 }
+              }
+              else {
+                // console.log(scheduleArr);
+                // printSchedule();
               }
               scheduleArr = backup;
             }
@@ -367,6 +372,7 @@ function createSchedule() {
   console.log(scheduleSheet.getName());
   scheduleTo3D();
   if (!extrapolateSchedule() || !checkAllConflicts()) {
+    console.log(scheduleArr);
     console.log('Initial state is unsolveable');
     return;
   }
@@ -378,6 +384,16 @@ function createSchedule() {
     console.log('Finished', c);
     console.log(scheduleArr);
     scheduleRange.setValues(scheduleArr);
+    console.log("Brothers who did not reach their schedule goal:")
+    for (const brother of brotherCollection.list) {
+      let id = brother.id;
+      let name = brother.name;
+      let goal = brother.totalGoal;
+      let count = getOccurrenceCount(id, scheduleArr);
+      if (count < goal) {
+        console.log(`${id} ${name} ${count} < ${goal}`);
+      }
+    }
   }
   else {
     console.log('Could not be solved');
