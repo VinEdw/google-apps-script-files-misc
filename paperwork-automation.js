@@ -9,7 +9,7 @@ function paperworkPrompt() {
   const ui = SpreadsheetApp.getUi();
   const result = ui.prompt("Enter a tutor name:", ui.ButtonSet.OK_CANCEL)
   const button = result.getSelectedButton();
-  const name = result.getResponseText();
+  const name = result.getResponseText().trim();
   if (button === ui.Button.OK) {
     const tutor = getTutor(name);
     createPaperwork(tutor);
