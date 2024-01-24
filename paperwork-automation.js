@@ -186,7 +186,7 @@ function getTutor(name) {
     throw new Error("Tutor name not found")
   }
   else if (tutorRows.length > 1) {
-    throw new Error("Tutor name listed multiple times it 'Tutors' sheet")
+    throw new Error("Tutor name listed multiple times in 'Tutors' sheet")
   }
   const tutorRow = tutorRows[0]
   let email = tutorRow[tutorCols.email];
