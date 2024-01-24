@@ -418,23 +418,23 @@ function createTimeRecord(tutor, tutorFolder, templateFolder) {
   // Store any links created in this object
   const links = {};
   // Find the time record template and duplicate it
-  const timeRecordTemplate = getChildFileRegex(templateFolder, /Time Record/);
-  const timeRecord = timeRecordTemplate.makeCopy(
-    timeRecordTemplate.getName().replaceAll("{tutorName}", tutor.name),
+  const template = getChildFileRegex(templateFolder, /Time Record/);
+  const file = template.makeCopy(
+    template.getName().replaceAll("{tutorName}", tutor.name),
     tutorFolder
   );
-  const timeRecordForm = FormApp.openByUrl(timeRecord.getUrl());
-  links.form = timeRecordForm.getPublishedUrl();
+  const form = FormApp.openByUrl(file.getUrl());
+  links.form = form.getPublishedUrl();
 
   // Set the new title to use the tutor name
-  let title = timeRecordForm.getTitle();
+  let title = form.getTitle();
   let newTitle = title.replaceAll("{tutorName}", tutor.name);
-  timeRecordForm.setTitle(newTitle);
+  form.setTitle(newTitle);
 
   // Save the index of the 'Total number of hours' question
   let hoursQuestionIdx;
   // Modify certain questions as needed
-  const items = timeRecordForm.getItems();
+  const items = form.getItems();
   for (let item of items) {
     let title = item.getTitle();
     // Set the tutor's sections
@@ -470,11 +470,11 @@ function createTimeRecord(tutor, tutorFolder, templateFolder) {
   // Move the hours question 3 spaces back
   // The question will be moved back to its original spot after the sheet is made
   // This is done to adjust the column order in the linked spreadsheet
-  timeRecordForm.moveItem(hoursQuestionIdx, hoursQuestionIdx - 3);
+  form.moveItem(hoursQuestionIdx, hoursQuestionIdx - 3);
   // Create a linked spreadsheet and save the url
-  links.sheet = createLinkedSheet(timeRecord, timeRecordForm, tutorFolder)
+  links.sheet = createLinkedSheet(file, form, tutorFolder)
   // Move the hours question back to its original position
-  timeRecordForm.moveItem(hoursQuestionIdx - 3, hoursQuestionIdx);
+  form.moveItem(hoursQuestionIdx - 3, hoursQuestionIdx);
   // Add week and month summary sheets & formulas to the spreadsheet
   const timeRecordSS = SpreadsheetApp.openByUrl(links.sheet);
   const weekFormula = `=QUERY('Form Responses 1'!A:J, "SELECT B, SUM(F) WHERE B IS NOT NULL GROUP BY B LABEL B 'Week', SUM(F) 'Hours'", 1)`;
@@ -499,25 +499,25 @@ function createAttendanceForm(tutor, tutorFolder, templateFolder) {
   // Store any links created in this object
   const links = {};
   // Find the attendance form template and duplicate it
-  const attendanceTemplate = getChildFileRegex(templateFolder, /Student Attendance/);
-  const attendance = attendanceTemplate.makeCopy(
-    attendanceTemplate.getName()
+  const template = getChildFileRegex(templateFolder, /Student Attendance/);
+  const file = template.makeCopy(
+    template.getName()
       .replaceAll("{tutorName}", tutor.name)
       .replaceAll("{courseCRNs}", tutor.courses.map(x => x.courseCRN).join("/")),
     tutorFolder
   );
-  const attendanceForm = FormApp.openByUrl(attendance.getUrl());
-  links.form = attendanceForm.getPublishedUrl();
+  const form = FormApp.openByUrl(file.getUrl());
+  links.form = form.getPublishedUrl();
 
   // Set the new title to use the tutor name
-  let title = attendanceForm.getTitle();
+  let title = form.getTitle();
   let newTitle = title
     .replaceAll("{tutorName}", tutor.name)
     .replaceAll("{courseCRNs}", tutor.courses.map(x => x.courseCRN).join("/"));
-  attendanceForm.setTitle(newTitle);
+  form.setTitle(newTitle);
 
   // Set the week select question
-  for (let item of attendanceForm.getItems()) {
+  for (let item of form.getItems()) {
     let title = item.getTitle();
     if (title === "Week") {
       let weekSelect = item.asListItem();
@@ -532,14 +532,14 @@ function createAttendanceForm(tutor, tutorFolder, templateFolder) {
   for (const course of tutor.courses) {
     const courseStr = `${course.name} (${course.courseCRN}) ${course.professor.name} ${course.days} ${course.times}`;
     const questionStr = courseStr + " - Select all students who attended the group session:";
-    const item = attendanceForm.addCheckboxItem();
+    const item = form.addCheckboxItem();
     item.setTitle(questionStr);
-    attendanceForm.moveItem(item.getIndex(), attendanceForm.getItems().length - 2)
+    form.moveItem(item.getIndex(), form.getItems().length - 2)
     courseIdxs.push(item.getIndex());
   }
 
   // Create a linked spreadsheet and save the url
-  links.sheet = createLinkedSheet(attendance, attendanceForm, tutorFolder);
+  links.sheet = createLinkedSheet(file, form, tutorFolder);
   // Add attendance summary sheets with formulas to the spreadsheet
   const attendanceSS = SpreadsheetApp.openByUrl(links.sheet);
   const responseSheet = attendanceSS.getSheetByName("Form Responses 1");
@@ -583,28 +583,28 @@ function createAvailabilitySurvey(tutor, tutorFolder, templateFolder) {
   // Store any links created in this object
   const links = {};
   // Find the availability survey form template and duplicate it
-  const surveyTemplate = getChildFileRegex(templateFolder, /Student Availability Survey/);
-  const survey = surveyTemplate.makeCopy(
-    surveyTemplate.getName().replaceAll("{tutorName}", tutor.name),
+  const template = getChildFileRegex(templateFolder, /Student Availability Survey/);
+  const file = template.makeCopy(
+    template.getName().replaceAll("{tutorName}", tutor.name),
     tutorFolder
   );
-  const surveyForm = FormApp.openByUrl(survey.getUrl());
-  links.viewForm = surveyForm.getPublishedUrl();
-  links.editForm = surveyForm.getEditUrl();
+  const form = FormApp.openByUrl(file.getUrl());
+  links.viewForm = form.getPublishedUrl();
+  links.editForm = form.getEditUrl();
 
   // Set the new title to use the tutor name
-  let title = surveyForm.getTitle();
+  let title = form.getTitle();
   let newTitle = title.replaceAll("{tutorName}", tutor.name);
-  surveyForm.setTitle(newTitle);
+  form.setTitle(newTitle);
   // Set the form description to use the tutor name and CRNs
-  let description = surveyForm.getDescription();
+  let description = form.getDescription();
   let newDescription = description
     .replaceAll("{tutorName}", tutor.name)
     .replaceAll("{CRNKey}", tutor.courses.map(x => `- ${x.groupSessionCRN} → ${x.name} (${x.courseCRN}) ${x.professor.name} ${x.days} ${x.times}`).join("\n"));
-  surveyForm.setDescription(newDescription);
+  form.setDescription(newDescription);
 
   // Add the tutor as an editor for the form
-  // survey.addEditor(tutor.email);
+  // file.addEditor(tutor.email);
 
   // Return the links
   return links;
@@ -646,15 +646,15 @@ function injectLink(body, pattern, msg, url) {
  */
 function createPaperworkDoc(tutor, tutorFolder, templateFolder, timeRecordLinks, attendanceFormLinks, availabilitySurveyLinks, assignmentLetterLinks) {
   // Find the paperwork doc template and duplicate it
-  const paperworkTemplate = getChildFileRegex(templateFolder, /Paperwork Submission Links/);
-  const paperwork = paperworkTemplate.makeCopy(
-    paperworkTemplate.getName().replaceAll("{tutorName}", tutor.name),
+  const template = getChildFileRegex(templateFolder, /Paperwork Submission Links/);
+  const file = template.makeCopy(
+    template.getName().replaceAll("{tutorName}", tutor.name),
     tutorFolder
   );
-  const paperworkDoc = DocumentApp.openByUrl(paperwork.getUrl());
+  const doc = DocumentApp.openByUrl(file.getUrl());
 
   // Get the document body
-  const body = paperworkDoc.getBody();
+  const body = doc.getBody();
 
   // Define the url replacements to make
   injectLink(body, "{attendanceForm}", "Attendance Form", attendanceFormLinks.form);
@@ -679,9 +679,9 @@ function createPaperworkDoc(tutor, tutorFolder, templateFolder, timeRecordLinks,
     }
   }
 
-  allowAnyoneViewFile(paperwork);
+  allowAnyoneViewFile(file);
 
-  return paperwork.getUrl();
+  return file.getUrl();
 }
 
 /**
