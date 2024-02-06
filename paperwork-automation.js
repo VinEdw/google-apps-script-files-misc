@@ -477,12 +477,16 @@ function createTimeRecord(tutor, tutorFolder, templateFolder) {
   form.moveItem(hoursQuestionIdx - 3, hoursQuestionIdx);
   // Add week and month summary sheets & formulas to the spreadsheet
   const timeRecordSS = SpreadsheetApp.openByUrl(links.sheet);
+  const dayFormula = `=QUERY('Form Responses 1'!A:J, "SELECT E, SUM(F) WHERE E IS NOT NULL GROUP BY E LABEL E 'Date', SUM(F) 'Hours'", 1)`;
   const weekFormula = `=QUERY('Form Responses 1'!A:J, "SELECT B, SUM(F) WHERE B IS NOT NULL GROUP BY B LABEL B 'Week', SUM(F) 'Hours'", 1)`;
   const monthFormula = `=QUERY('Form Responses 1'!A:J, "SELECT MONTH(E)+1, SUM(F) WHERE E IS NOT NULL GROUP BY MONTH(E)+1 LABEL MONTH(E)+1 'Month', SUM(F) 'Hours'", 1)`;
-  timeRecordSS.insertSheet("Week Summary")
+  timeRecordSS.insertSheet("Breakdown by Day")
+    .getRange(1, 1)
+    .setFormula(dayFormula);
+  timeRecordSS.insertSheet("Breakdown by Week")
     .getRange(1, 1)
     .setFormula(weekFormula);
-  timeRecordSS.insertSheet("Month Summary")
+  timeRecordSS.insertSheet("Breakdown by Month")
     .getRange(1, 1)
     .setFormula(monthFormula);
   
