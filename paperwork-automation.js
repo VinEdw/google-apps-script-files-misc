@@ -32,9 +32,9 @@ const professorCols = {
 const courseCols = {
   tutorType: 0,
   subject: 1,
-  courseName: 2,
-  courseCRN: 3,
-  groupSessionCRN: 4,
+  groupSessionCRN: 2,
+  courseName: 3,
+  courseCRN: 4,
   days: 5,
   times: 6,
   location: 7,
