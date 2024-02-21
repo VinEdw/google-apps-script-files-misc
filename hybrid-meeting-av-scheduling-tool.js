@@ -246,12 +246,12 @@ function createSchedule() {
     // }
 
     const day = dates[y][0];
-    if (day === 'Tue') {
+    if (['Mon', 'Tue', 'Wed', 'Thur', 'Fri'].includes(day)) {
       if (!bro[role].tuesday) {
         return false;
       }
     }
-    if (day === 'Sat') {
+    if (['Sat', 'Sun'].includes(day)) {
       if (!bro[role].saturday) {
         return false;
       }
