@@ -93,6 +93,7 @@ The form is linked to a Google Sheet, to which this script is bound.
 The custom function provides prompts to the user to make sure that they check the quality of the prep sheet, format the file name correctly, and confirm the correct subject has been extracted.
 Afterwards, the script moves the prep sheet from the default landing folder to the appropriate location in an organized folder structure.
 Prep sheets are organized by subject and semester in that folder.
+Any external links to Google Drive files found in the prep sheet are duplicated, and the links in the prep sheet are updated to point to the new copies.
 
 ## spreadsheet-clear-button
 
