@@ -566,17 +566,17 @@ function createAttendanceForm(tutor, tutorFolder, templateFolder) {
     sheet.getRange(1, 1, 1, 3)
       .setValues([["Student", "Total Hours", "Total Sessions"]]);
     // Set the student list formula
-    const studentFormula = `=SORT(UNIQUE(FLATTEN(IFERROR(ARRAYFORMULA(SPLIT(${courseColA1}, ", ", FALSE))))), 1, TRUE)`;
+    const studentFormula = `=SORT(UNIQUE(FLATTEN(IFERROR(ARRAYFORMULA(SPLIT(INDIRECT("${courseColA1}"), ", ", FALSE))))), 1, TRUE)`;
     sheet.getRange(2, 1)
       .setFormula(studentFormula);
     // Set the total hour calculating formula, setting the number format to 2 decimal places
-    const hourFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(24*TIMEVALUE(FILTER('Form Responses 1'!$F$2:$F, FIND(A2, ${courseColA1})) - FILTER('Form Responses 1'!$E$2:$E, FIND(A2, ${courseColA1}))))))`;
+    const hourFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(24*TIMEVALUE(FILTER(INDIRECT("'Form Responses 1'!$F$2:$F"), FIND(A2, INDIRECT("${courseColA1}"))) - FILTER(INDIRECT("'Form Responses 1'!$E$2:$E"), FIND(A2, INDIRECT("${courseColA1}")))))))`;
     sheet.getRange(2, 2)
       .setFormula(hourFormula)
       .setNumberFormat("0.00")
       .copyTo(sheet.getRange(2, 2, 500));
     // Set the total session count formula
-    const sessionFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(COUNT(FILTER('Form Responses 1'!$A$2:$A, FIND(A2, ${courseColA1}))))))`;
+    const sessionFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(COUNT(FILTER(INDIRECT("'Form Responses 1'!$A$2:$A"), FIND(A2, INDIRECT("${courseColA1}")))))))`;
     sheet.getRange(2, 3)
       .setFormula(sessionFormula)
       .copyTo(sheet.getRange(2, 3, 500));
