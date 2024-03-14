@@ -49,6 +49,19 @@ const courseCols = {
   assignmentLetter: 16
 }
 
+/**
+ * Function to get values from the config sheet
+ * @param {string} key
+ * @returns {string}
+ */
+function getSetting(key) {
+  const SS = SpreadsheetApp.getActiveSpreadsheet();
+  const settingSheet = SS.getSheetByName("Config");
+  const data = settingSheet.getRange(1, 1).getDataRegion().getValues().slice(1);
+  let value = data.filter(x => x[0] === key)[0][1];
+  return value;
+}
+
 class Person {
   /**
    * @param {string} name
@@ -225,6 +238,15 @@ function getTutor(name) {
 }
 
 /**
+ * @param {string} url
+ * @returns {DriveApp.Folder}
+ */
+function getFolderByUrl(url) {
+  const id = url.match(/[-\w]{25,}/);
+  return DriveApp.getFolderById(id);
+}
+
+/**
  * @param {DriveApp.File} file
  * @returns {DriveApp.Folder}
  */
@@ -302,7 +324,7 @@ function createPaperwork(tutor) {
   const tutorFolder = subjectFolder.createFolder(tutorFolderName);
 
   // Start duplicating and tailoring the files from the templates folder
-  const templateFolder = getChildFolder(parentFolder, "Templates");
+  const templateFolder = getFolderByUrl(getSetting("TemplateFolder"));
   if (!templateFolder) {
     throw new Error("'Templates' folder not found")
   }
@@ -386,14 +408,13 @@ function createWeekDropdown(listItem) {
   }
   const dateStr = date => `${pad2Digits(date.getMonth() + 1)}/${pad2Digits(date.getDate())}`;
 
-  // Parse the instructions in the first option to determine the starting date for week 0 and the number of semester weeks
-  const input = JSON.parse(listItem.getChoices()[0].getValue());
+  // Parse the instructions in the config sheet to determine the starting date for week 0 and the number of semester weeks
+  let mon = getSetting("Week0Monday");
+  let totalWeeks = getSetting("TotalWeeks");
 
-  // Create a variable for that monday
-  let mon = new Date(input.week0Year, input.week0Month - 1, input.week0Day);
   // Create an array to store the new values
   const newValues = [];
-  for (let i = 0; i <= input.totalWeeks; i++) {
+  for (let i = 0; i <= totalWeeks; i++) {
     // Create variables for the Sunday and Friday of the week
     let sun = addDays(mon, 6);
     let fri = addDays(mon, 4);
@@ -420,7 +441,9 @@ function createTimeRecord(tutor, tutorFolder, templateFolder) {
   // Find the time record template and duplicate it
   const template = getChildFileRegex(templateFolder, /Time Record/);
   const file = template.makeCopy(
-    template.getName().replaceAll("{tutorName}", tutor.name),
+    template.getName()
+      .replaceAll("{semester}", getSetting("Semester"))
+      .replaceAll("{tutorName}", tutor.name),
     tutorFolder
   );
   const form = FormApp.openByUrl(file.getUrl());
@@ -428,11 +451,13 @@ function createTimeRecord(tutor, tutorFolder, templateFolder) {
 
   // Set the new title to use the tutor name
   let title = form.getTitle();
-  let newTitle = title.replaceAll("{tutorName}", tutor.name);
+  let newTitle = title
+    .replaceAll("{semester}", getSetting("Semester"))
+    .replaceAll("{tutorName}", tutor.name);
   form.setTitle(newTitle);
 
-  // Save the index of the 'Total number of hours' question
-  let hoursQuestionIdx;
+  // Save the item of the 'Total number of hours' question
+  let hoursQuestion;
   // Modify certain questions as needed
   const items = form.getItems();
   for (let item of items) {
@@ -462,19 +487,20 @@ function createTimeRecord(tutor, tutorFolder, templateFolder) {
       createWeekDropdown(weekSelect);
     }
     else if (title === "Total number of hours") {
-      let hoursQuestion = item.asTextItem();
-      hoursQuestionIdx = hoursQuestion.getIndex();
+      hoursQuestion = item.asTextItem();
     }
   }
 
-  // Move the hours question 3 spaces back
+  // Move the hours question to index 4
   // The question will be moved back to its original spot after the sheet is made
   // This is done to adjust the column order in the linked spreadsheet
-  form.moveItem(hoursQuestionIdx, hoursQuestionIdx - 3);
+  let hoursQuestionIdx = hoursQuestion.getIndex();
+  let temporaryIdx = 5;
+  form.moveItem(hoursQuestionIdx, temporaryIdx);
   // Create a linked spreadsheet and save the url
   links.sheet = createLinkedSheet(file, form, tutorFolder)
   // Move the hours question back to its original position
-  form.moveItem(hoursQuestionIdx - 3, hoursQuestionIdx);
+  form.moveItem(temporaryIdx, hoursQuestionIdx);
   // Add week and month summary sheets & formulas to the spreadsheet
   const timeRecordSS = SpreadsheetApp.openByUrl(links.sheet);
   const dayFormula = `=QUERY('Form Responses 1'!A:J, "SELECT E, SUM(F) WHERE E IS NOT NULL GROUP BY E LABEL E 'Date', SUM(F) 'Hours'", 1)`;
@@ -506,6 +532,7 @@ function createAttendanceForm(tutor, tutorFolder, templateFolder) {
   const template = getChildFileRegex(templateFolder, /Student Attendance/);
   const file = template.makeCopy(
     template.getName()
+      .replaceAll("{semester}", getSetting("Semester"))
       .replaceAll("{tutorName}", tutor.name)
       .replaceAll("{courseCRNs}", tutor.courses.map(x => x.courseCRN).join("/")),
     tutorFolder
@@ -516,6 +543,7 @@ function createAttendanceForm(tutor, tutorFolder, templateFolder) {
   // Set the new title to use the tutor name
   let title = form.getTitle();
   let newTitle = title
+    .replaceAll("{semester}", getSetting("Semester"))
     .replaceAll("{tutorName}", tutor.name)
     .replaceAll("{courseCRNs}", tutor.courses.map(x => x.courseCRN).join("/"));
   form.setTitle(newTitle);
@@ -597,7 +625,9 @@ function createAvailabilitySurvey(tutor, tutorFolder, templateFolder) {
   // Find the availability survey form template and duplicate it
   const template = getChildFileRegex(templateFolder, /Student Availability Survey/);
   const file = template.makeCopy(
-    template.getName().replaceAll("{tutorName}", tutor.name),
+    template.getName()
+      .replaceAll("{semester}", getSetting("Semester"))
+      .replaceAll("{tutorName}", tutor.name),
     tutorFolder
   );
   const form = FormApp.openByUrl(file.getUrl());
@@ -611,12 +641,28 @@ function createAvailabilitySurvey(tutor, tutorFolder, templateFolder) {
   // Set the form description to use the tutor name and CRNs
   let description = form.getDescription();
   let newDescription = description
+    .replaceAll("{semester}", getSetting("Semester"))
     .replaceAll("{tutorName}", tutor.name)
     .replaceAll("{CRNKey}", tutor.courses.map(x => `- ${x.groupSessionCRN} → ${x.name} (${x.courseCRN}) ${x.professor.name} ${x.days} ${x.times}`).join("\n"));
   form.setDescription(newDescription);
 
+  // Set the section select question
+  for (let item of form.getItems()) {
+    let title = item.getTitle();
+    if (title === "Section") {
+      let sectionSelect = item.asMultipleChoiceItem();
+      let sections = tutor.courses
+        .map(x => `${x.name} (${x.courseCRN}) ${x.professor.name} ${x.days} ${x.times}`);
+      sectionSelect.setChoiceValues(sections);
+      break;
+    }
+  }
+
   // Add the tutor as an editor for the form
-  // file.addEditor(tutor.email);
+  // If debug mode is not enabled
+  if (!getSetting("Debug")) {
+    file.addEditor(tutor.email);
+  }
 
   // Return the links
   return links;
@@ -660,7 +706,9 @@ function createPaperworkDoc(tutor, tutorFolder, templateFolder, timeRecordLinks,
   // Find the paperwork doc template and duplicate it
   const template = getChildFileRegex(templateFolder, /Paperwork Submission Links/);
   const file = template.makeCopy(
-    template.getName().replaceAll("{tutorName}", tutor.name),
+    template.getName()
+      .replaceAll("{semester}", getSetting("Semester"))
+      .replaceAll("{tutorName}", tutor.name),
     tutorFolder
   );
   const doc = DocumentApp.openByUrl(file.getUrl());
@@ -674,6 +722,10 @@ function createPaperworkDoc(tutor, tutorFolder, templateFolder, timeRecordLinks,
   injectLink(body, "{timecardForm}", "Timecard Form", timeRecordLinks.form);
   injectLink(body, "{timecardSheet}", "Timecard Sheet", timeRecordLinks.sheet);
   injectLink(body, "{studentAvailabilityForm}", "Student Availability Form", availabilitySurveyLinks.editForm);
+  injectLink(body, "{roomRequestForm}", "Room Request Form", getSetting("RoomRequestForm"));
+  injectLink(body, "{roomRequestSheet}", "Room Request Sheet", getSetting("RoomRequestSheet"));
+  injectLink(body, "{endOfSemesterSurvey}", "End of Semester Survey", getSetting("EndOfSemesterSurvey"));
+  replaceDocText(body, "{lastWeeks}", `${getSetting("TotalWeeks") - 2}-${getSetting("TotalWeeks") - 1}`);
 
   // If there is only one assignment letter, then simply make one replacement
   // Otherwise, make a link for each professor
@@ -711,6 +763,7 @@ function createAssignmentLetters(tutor, tutorFolder, templateFolder, availabilit
     const assignmentLetterTemplate = getChildFileRegex(templateFolder, /Assignment Letter/);
     const assignmentLetter = assignmentLetterTemplate.makeCopy(
       assignmentLetterTemplate.getName()
+        .replaceAll("{semester}", getSetting("Semester"))
         .replaceAll("{tutorName}", tutor.name)
         .replaceAll("{professorName}", professorName)
         .replaceAll("{tutorType}", courses[0].tutorType),
