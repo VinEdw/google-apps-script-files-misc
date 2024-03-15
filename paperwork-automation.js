@@ -2,17 +2,41 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu("Custom Scripts")
     .addItem("Create Tutor Paperwork", "paperworkPrompt")
+    .addSeparator()
+    .addItem("Email Tutor Paperwork Doc", "emailPaperworkPrompt")
+    .addItem("Email Professor & Tutor Assignment Letter", "emailAssignmentPrompt")
     .addToUi();
 }
 
-function paperworkPrompt() {
+function tutorPrompt() {
   const ui = SpreadsheetApp.getUi();
   const result = ui.prompt("Enter a tutor name:", ui.ButtonSet.OK_CANCEL)
   const button = result.getSelectedButton();
   const name = result.getResponseText().trim();
   if (button === ui.Button.OK) {
     const tutor = getTutor(name);
+    return tutor;
+  }
+}
+
+function paperworkPrompt() {
+  const tutor = tutorPrompt();
+  if (tutor) {
     createPaperwork(tutor);
+  }
+}
+
+function emailPaperworkPrompt() {
+  const tutor = tutorPrompt();
+  if (tutor) {
+    emailPaperwork(tutor);
+  }
+}
+
+function emailAssignmentPrompt() {
+  const tutor = tutorPrompt();
+  if (tutor) {
+    emailAssignment(tutor);
   }
 }
 
@@ -811,4 +835,75 @@ function createAssignmentLetters(tutor, tutorFolder, templateFolder, availabilit
   }
 
   return links;
+}
+
+/**
+ * @param {Tutor} tutor
+ */
+function emailPaperwork(tutor) {
+  const SS = SpreadsheetApp.getActiveSpreadsheet();
+  const tutorSheet = SS.getSheetByName("Tutors");
+  // Get the paperwork doc url
+  const tutorRow = tutorSheet.getRange(1, 1)
+    .getDataRegion()
+    .getValues()
+    .filter(x => x[tutorCols.name] === tutor.name)[0];
+  const paperworkDoc = tutorRow[tutorCols.paperworkDoc];
+  // Set the subject
+  const subject = `${getSetting("Semester")} Paperwork Submission Links - ${tutor.name}`;
+  // Set the body
+  const templateFolder = getFolderByUrl(getSetting("TemplateFolder"));
+  const emailTemplate = getChildFileRegex(templateFolder, /tutor-paperwork-email/)
+    .getBlob()
+    .getDataAsString();
+  const bodyHtml = emailTemplate
+    .replaceAll("{tutorName}", tutor.name)
+    .replaceAll("{paperworkDoc}", paperworkDoc);
+  // Create the email draft
+  const draft = GmailApp.createDraft(tutor.email,
+    subject,
+    "",
+    {cc: getSetting("StaffEmails"), htmlBody: bodyHtml});
+
+  // Send the email draft if debug mode is not enabled
+  if (!getSetting("Debug")) {
+    draft.send();
+  }
+}
+
+/**
+ * @param {Tutor} tutor
+ */
+function emailAssignment(tutor) {
+  const SS = SpreadsheetApp.getActiveSpreadsheet();
+  const courseSheet = SS.getSheetByName("Courses");
+  for (const profName of tutor.getProfessorNames()) {
+    const professor = getProfessor(profName);
+    // Get the assignment letter url
+    const courseRow = courseSheet.getRange(1, 1)
+      .getDataRegion()
+      .getValues()
+      .filter(x => x[courseCols.tutor] === tutor.name)
+      .filter(x => x[courseCols.professor] === profName)[0];
+    const assignmentLetter = courseRow[courseCols.assignmentLetter];
+    // Set the subject
+    const subject = `${getSetting("Semester")} ASAC Group Tutor Assignment Letter - ${profName}`;
+    // Set the body
+    const templateFolder = getFolderByUrl(getSetting("TemplateFolder"));
+    const emailTemplate = getChildFileRegex(templateFolder, /assignment-letter-email/)
+      .getBlob()
+      .getDataAsString();
+    const bodyHtml = emailTemplate
+      .replaceAll("{professorName}", profName)
+      .replaceAll("{tutorName}", tutor.name)
+      .replaceAll("{assignmentLetter}", assignmentLetter);
+    const draft = GmailApp.createDraft(professor.email + "," + tutor.email,
+      subject,
+      "",
+      {cc: getSetting("StaffEmails"), htmlBody: bodyHtml});
+    // Send the email draft if debug mode is not enabled
+    if (!getSetting("Debug")) {
+      draft.send();
+    }
+  }
 }
