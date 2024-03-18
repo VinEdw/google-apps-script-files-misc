@@ -42,12 +42,12 @@ function emailAssignmentPrompt() {
 
 // Define some key column numbers in the spreadsheet
 const tutorCols = {
-  name: 0,
-  email: 1,
-  driveFolder: 2,
-  paperworkDoc: 3,
-  attendanceSheet: 4,
-  timecardSheet: 5,
+  name: 1,
+  email: 2,
+  driveFolder: 3,
+  paperworkDoc: 4,
+  attendanceSheet: 5,
+  timecardSheet: 6,
 }
 const professorCols = {
   name: 0,
@@ -384,17 +384,16 @@ function updateTutorLinks(tutor, driveFolder, paperworkDoc, attendanceSheet, tim
   const tutorSheet = SS.getSheetByName("Tutors");
   const table = tutorSheet.getRange(1, 1).getDataRegion();
   const tableValues = table.getValues();
-  for (const row of tableValues) {
+  let targetRowIdx;
+  for (const [i, row] of tableValues.entries()) {
     const name = row[tutorCols.name];
     if (tutor.name === name) {
-      row[tutorCols.driveFolder] = driveFolder;
-      row[tutorCols.paperworkDoc] = paperworkDoc;
-      row[tutorCols.attendanceSheet] = attendanceSheet;
-      row[tutorCols.timecardSheet] = timecardSheet;
+      targetRowIdx = i;
       break;
     }
   }
-  table.setValues(tableValues);
+  table.offset(targetRowIdx, 3, 1, 4)
+    .setValues([[driveFolder, paperworkDoc, attendanceSheet, timecardSheet]]);
 }
 
 /**
