@@ -750,6 +750,20 @@ function createPaperworkDoc(tutor, tutorFolder, templateFolder, timeRecordLinks,
   injectLink(body, "{endOfSemesterSurvey}", "End of Semester Survey", getSetting("EndOfSemesterSurvey"));
   replaceDocText(body, "{lastWeeks}", `${getSetting("TotalWeeks") - 2}-${getSetting("TotalWeeks") - 1}`);
 
+  // If the tutor is an SI, inject the SI resource doc
+  // Otherwise, delete the row in the document
+  if (tutor.isTutorType("SI")) {
+    injectLink(body, "{SIResourceDoc}", "SI Resources and Links", getSetting("SIResourceDoc"));
+  }
+  else {
+    body.findText("{SIResourceDoc}")
+      .getElement()
+      .getParent()
+      .getParent()
+      .getParent()
+      .removeFromParent();
+  }
+
   // If there is only one assignment letter, then simply make one replacement
   // Otherwise, make a link for each professor
   if (assignmentLetterLinks.length === 1) {
