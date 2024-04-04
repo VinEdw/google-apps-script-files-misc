@@ -1,3 +1,39 @@
+// SECTION: Key Spreadsheet Column Numbers
+
+const tutorCols = {
+  name: 1,
+  email: 2,
+  driveFolder: 3,
+  paperworkDoc: 4,
+  attendanceSheet: 5,
+  timecardSheet: 6,
+}
+const professorCols = {
+  name: 0,
+  email: 1,
+}
+const courseCols = {
+  tutorType: 0,
+  subject: 1,
+  groupSessionCRN: 2,
+  courseName: 3,
+  courseCRN: 4,
+  days: 5,
+  times: 6,
+  location: 7,
+  professor: 8,
+  tutor: 9,
+  lectureHours: 10,
+  sessionHours: 11,
+  prepHours: 12,
+  observationHours: 13,
+  trainingHours: 14,
+  totalHours: 15,
+  assignmentLetter: 16
+}
+
+// SECTION: Menus
+
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu("Custom Scripts")
@@ -7,6 +43,8 @@ function onOpen() {
     .addItem("Email Professor & Tutor Assignment Letter", "emailAssignmentPrompt")
     .addToUi();
 }
+
+// SECTION: User Prompts
 
 function tutorPrompt() {
   const ui = SpreadsheetApp.getUi();
@@ -40,38 +78,171 @@ function emailAssignmentPrompt() {
   }
 }
 
-// Define some key column numbers in the spreadsheet
-const tutorCols = {
-  name: 1,
-  email: 2,
-  driveFolder: 3,
-  paperworkDoc: 4,
-  attendanceSheet: 5,
-  timecardSheet: 6,
+// SECTION: Drive Helper Functions
+
+/**
+ * @param {string} url
+ * @returns {DriveApp.Folder}
+ */
+function getFolderByUrl(url) {
+  const id = url.match(/[-\w]{25,}/);
+  return DriveApp.getFolderById(id);
 }
-const professorCols = {
-  name: 0,
-  email: 1,
+
+/**
+ * @param {DriveApp.File} file
+ * @returns {DriveApp.Folder}
+ */
+function getParentFolder(file) {
+  const parents = file.getParents();
+  let folder = parents.next();
+  return folder;
 }
-const courseCols = {
-  tutorType: 0,
-  subject: 1,
-  groupSessionCRN: 2,
-  courseName: 3,
-  courseCRN: 4,
-  days: 5,
-  times: 6,
-  location: 7,
-  professor: 8,
-  tutor: 9,
-  lectureHours: 10,
-  sessionHours: 11,
-  prepHours: 12,
-  observationHours: 13,
-  trainingHours: 14,
-  totalHours: 15,
-  assignmentLetter: 16
+
+/**
+ * Return the folder with the given name inside the parent folder
+ * If create is true, create a folder with that name if it does not exist
+ * @param {DriveApp.Folder} parent
+ * @param {string} name
+ * @param {boolean} create
+ * @returns {DriveApp.Folder}
+ */
+function getChildFolder(parent, name, create = false) {
+  const children = parent.getFolders();
+  while (children.hasNext()) {
+    let folder = children.next();
+    if (folder.getName() === name) {
+      return folder;
+    }
+  }
+  if (create) {
+    let newFolder = parent.createFolder(name);
+    return newFolder;
+  }
 }
+
+/**
+ * @param {DriveApp.Folder} folder
+ * @param {RegExp} regex
+ * @returns {DriveApp.File}
+ */
+function getChildFileRegex(folder, regex) {
+  const children = folder.getFiles();
+  while (children.hasNext()) {
+    let file = children.next();
+    let name = file.getName();
+    if (regex.test(name)) {
+      return file;
+    }
+  }
+}
+
+/**
+ * @param {DriveApp.File} file
+ * @returns {boolean}
+ */
+function allowAnyoneViewFile(file) {
+  try {
+    // Set the sharing permission (anyone with link can view)
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return true;
+  }
+  catch {
+    return false;
+  }
+}
+
+// SECTION: Form Helper Functions
+
+/**
+ * @param {DriveApp.File} formFile
+ * @param {FormApp.Form} form
+ * @param {DriveApp.Form} folder
+ * @returns {string}
+ */
+function createLinkedSheet(formFile, form, folder) {
+  // Create a new spreadsheet
+  const linkedSS = SpreadsheetApp.create(formFile.getName() + " (Responses)");
+  // Move the spreadsheet to the desired folder and make the form connection
+  const file = DriveApp.getFileById(linkedSS.getId())
+  file.moveTo(folder);
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, linkedSS.getId());
+  allowAnyoneViewFile(file);
+  // Delete the empty default sheet
+  let emptySheet = linkedSS.getSheetByName("Sheet1");
+  linkedSS.deleteSheet(emptySheet);
+  // Return the spreadsheet url
+  return linkedSS.getUrl();
+}
+
+/**
+ * @param {FormApp.ListItem} listItem
+ * @returns {FormApp.ListItem}
+ */
+function createWeekDropdown(listItem) {
+  // Some helper functions
+  const pad2Digits = num => ("0" + num.toString()).slice(-2);
+  const addDays = (date, days) => {
+    let newDate = new Date(date.valueOf());
+    newDate.setDate(newDate.getDate() + days);
+    return newDate;
+  }
+  const dateStr = date => `${pad2Digits(date.getMonth() + 1)}/${pad2Digits(date.getDate())}`;
+
+  // Parse the instructions in the config sheet to determine the starting date for week 0 and the number of semester weeks
+  let mon = getSetting("Week0Monday");
+  let totalWeeks = getSetting("TotalWeeks");
+
+  // Create an array to store the new values
+  const newValues = [];
+  for (let i = 0; i <= totalWeeks; i++) {
+    // Create variables for the Sunday and Friday of the week
+    let sun = addDays(mon, 6);
+    let fri = addDays(mon, 4);
+    // Create a string representation of the week option and add it to the list
+    let str = `Week ${pad2Digits(i)}: ${dateStr(mon)} - ${dateStr(sun)} (Submission due Friday, ${dateStr(fri)})`;
+    newValues.push(str);
+    // Add 7 days to the current Monday to get the next week
+    mon = addDays(mon, 7);
+  }
+
+  // Set the choices on the listItem
+  listItem.setChoiceValues(newValues);
+  return listItem;
+}
+
+// SECTION: Doc Helper Functions
+
+/**
+ * @param {DocumentApp.Body} body
+ * @param {string} pattern
+ * @param {string} msg
+ */
+function replaceDocText(body, pattern, msg) {
+  // Edit the document as text
+  const text = body.editAsText();
+  // Replace the pattern with the desired message
+  text.replaceText(pattern, msg);
+}
+
+/**
+ * @param {DocumentApp.Body} body
+ * @param {string} pattern
+ * @param {string} msg
+ * @param {string} url
+ */
+function injectLink(body, pattern, msg, url) {
+  // Edit the document as text
+  const text = body.editAsText();
+  // Find where the pattern starts
+  let startIndex = text.getText().search(pattern);
+  // Replace the pattern with the desired message
+  text.replaceText(pattern, msg);
+  // Turn the message into a link with the desired url
+  text.setLinkUrl(startIndex, startIndex + msg.length - 1, url);
+}
+
+// SECTION: Spreadsheet Data Parsing
 
 /**
  * Function to get values from the config sheet
@@ -261,77 +432,7 @@ function getTutor(name) {
   return tutor;
 }
 
-/**
- * @param {string} url
- * @returns {DriveApp.Folder}
- */
-function getFolderByUrl(url) {
-  const id = url.match(/[-\w]{25,}/);
-  return DriveApp.getFolderById(id);
-}
-
-/**
- * @param {DriveApp.File} file
- * @returns {DriveApp.Folder}
- */
-function getParentFolder(file) {
-  const parents = file.getParents();
-  let folder = parents.next();
-  return folder;
-}
-
-/**
- * Return the folder with the given name inside the parent folder
- * If create is true, create a folder with that name if it does not exist
- * @param {DriveApp.Folder} parent
- * @param {string} name
- * @param {boolean} create
- * @returns {DriveApp.Folder}
- */
-function getChildFolder(parent, name, create = false) {
-  const children = parent.getFolders();
-  while (children.hasNext()) {
-    let folder = children.next();
-    if (folder.getName() === name) {
-      return folder;
-    }
-  }
-  if (create) {
-    let newFolder = parent.createFolder(name);
-    return newFolder;
-  }
-}
-
-/**
- * @param {DriveApp.Folder} folder
- * @param {RegExp} regex
- * @returns {DriveApp.File}
- */
-function getChildFileRegex(folder, regex) {
-  const children = folder.getFiles();
-  while (children.hasNext()) {
-    let file = children.next();
-    let name = file.getName();
-    if (regex.test(name)) {
-      return file;
-    }
-  }
-}
-
-/**
- * @param {DriveApp.File} file
- * @returns {boolean}
- */
-function allowAnyoneViewFile(file) {
-  try {
-    // Set the sharing permission (anyone with link can view)
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    return true;
-  }
-  catch {
-    return false;
-  }
-}
+// SECTION: Paperwork Creation
 
 /**
  * @param {Tutor} tutor
@@ -394,63 +495,6 @@ function updateTutorLinks(tutor, driveFolder, paperworkDoc, attendanceSheet, tim
   }
   table.offset(targetRowIdx, 3, 1, 4)
     .setValues([[driveFolder, paperworkDoc, attendanceSheet, timecardSheet]]);
-}
-
-/**
- * @param {DriveApp.File} formFile
- * @param {FormApp.Form} form
- * @param {DriveApp.Form} folder
- * @returns {string}
- */
-function createLinkedSheet(formFile, form, folder) {
-  // Create a new spreadsheet
-  const linkedSS = SpreadsheetApp.create(formFile.getName() + " (Responses)");
-  // Move the spreadsheet to the desired folder and make the form connection
-  const file = DriveApp.getFileById(linkedSS.getId())
-  file.moveTo(folder);
-  form.setDestination(FormApp.DestinationType.SPREADSHEET, linkedSS.getId());
-  allowAnyoneViewFile(file);
-  // Delete the empty default sheet
-  let emptySheet = linkedSS.getSheetByName("Sheet1");
-  linkedSS.deleteSheet(emptySheet);
-  // Return the spreadsheet url
-  return linkedSS.getUrl();
-}
-
-/**
- * @param {FormApp.ListItem} listItem
- * @returns {FormApp.ListItem}
- */
-function createWeekDropdown(listItem) {
-  // Some helper functions
-  const pad2Digits = num => ("0" + num.toString()).slice(-2);
-  const addDays = (date, days) => {
-    let newDate = new Date(date.valueOf());
-    newDate.setDate(newDate.getDate() + days);
-    return newDate;
-  }
-  const dateStr = date => `${pad2Digits(date.getMonth() + 1)}/${pad2Digits(date.getDate())}`;
-
-  // Parse the instructions in the config sheet to determine the starting date for week 0 and the number of semester weeks
-  let mon = getSetting("Week0Monday");
-  let totalWeeks = getSetting("TotalWeeks");
-
-  // Create an array to store the new values
-  const newValues = [];
-  for (let i = 0; i <= totalWeeks; i++) {
-    // Create variables for the Sunday and Friday of the week
-    let sun = addDays(mon, 6);
-    let fri = addDays(mon, 4);
-    // Create a string representation of the week option and add it to the list
-    let str = `Week ${pad2Digits(i)}: ${dateStr(mon)} - ${dateStr(sun)} (Submission due Friday, ${dateStr(fri)})`;
-    newValues.push(str);
-    // Add 7 days to the current Monday to get the next week
-    mon = addDays(mon, 7);
-  }
-
-  // Set the choices on the listItem
-  listItem.setChoiceValues(newValues);
-  return listItem;
 }
 
 /**
@@ -692,35 +736,6 @@ function createAvailabilitySurvey(tutor, tutorFolder, templateFolder) {
 }
 
 /**
- * @param {DocumentApp.Body} body
- * @param {string} pattern
- * @param {string} msg
- */
-function replaceDocText(body, pattern, msg) {
-  // Edit the document as text
-  const text = body.editAsText();
-  // Replace the pattern with the desired message
-  text.replaceText(pattern, msg);
-}
-
-/**
- * @param {DocumentApp.Body} body
- * @param {string} pattern
- * @param {string} msg
- * @param {string} url
- */
-function injectLink(body, pattern, msg, url) {
-  // Edit the document as text
-  const text = body.editAsText();
-  // Find where the pattern starts
-  let startIndex = text.getText().search(pattern);
-  // Replace the pattern with the desired message
-  text.replaceText(pattern, msg);
-  // Turn the message into a link with the desired url
-  text.setLinkUrl(startIndex, startIndex + msg.length - 1, url);
-}
-
-/**
  * @param {Tutor} tutor
  * @param {DriveApp.Folder} tutorFolder
  * @param {DriveApp.Folder} templateFolder
@@ -849,6 +864,8 @@ function createAssignmentLetters(tutor, tutorFolder, templateFolder, availabilit
 
   return links;
 }
+
+// SECTION: Email Sending Functions
 
 /**
  * @param {Tutor} tutor
