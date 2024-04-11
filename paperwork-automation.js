@@ -29,7 +29,8 @@ const courseCols = {
   observationHours: 13,
   trainingHours: 14,
   totalHours: 15,
-  assignmentLetter: 16
+  assignmentLetter: 16,
+  attendanceSheet: 17,
 }
 
 // SECTION: Menus
@@ -343,8 +344,9 @@ class Course {
    * @param {string} param.trainingHours
    * @param {string} param.totalHours
    * @param {SpreadsheetApp.Range} param.assignmentLetterCell
+   * @param {SpreadsheetApp.Range} param.attendanceSheetCell
    */
-  constructor({tutorType, subject, name, courseCRN, groupSessionCRN, days, times, location, professor, lectureHours, sessionHours, prepHours, observationHours, trainingHours, totalHours, assignmentLetterCell} = {}) {
+  constructor({tutorType, subject, name, courseCRN, groupSessionCRN, days, times, location, professor, lectureHours, sessionHours, prepHours, observationHours, trainingHours, totalHours, assignmentLetterCell, attendanceSheetCell} = {}) {
     this.tutorType = tutorType;
     this.subject = subject;
     this.name = name;
@@ -361,6 +363,7 @@ class Course {
     this.trainingHours = trainingHours;
     this.totalHours = totalHours;
     this.assignmentLetterCell = assignmentLetterCell;
+    this.attendanceSheetCell = attendanceSheetCell;
   }
 }
 
@@ -424,6 +427,7 @@ function getTutor(name) {
         trainingHours: x[0][courseCols.trainingHours],
         totalHours: x[0][courseCols.totalHours],
         assignmentLetterCell: courseSheet.getRange(x[1] + 1, courseCols.assignmentLetter + 1),
+        attendanceSheetCell: courseSheet.getRange(x[1] + 1, courseCols.attendanceSheet + 1),
       })
     })
 
@@ -470,7 +474,15 @@ function createPaperwork(tutor) {
   const paperworkLink = createPaperworkDoc(tutor, tutorFolder, templateFolder, timeRecordLinks, attendanceFormLinks, availabilitySurveyLinks, assignmentLetterLinks);
 
   // Write the links to the spreadsheet
-  updateTutorLinks(tutor, tutorFolder.getUrl(), paperworkLink, attendanceFormLinks.sheet, timeRecordLinks.sheet);
+  // If there are multiple attendance sheets, use the folder; otherwise use the link
+  let attendanceSheetUrl;
+  if (attendanceFormLinks.sheets.length > 1) {
+    attendanceSheetUrl = attendanceFormLinks.folder;
+  }
+  else {
+    attendanceSheetUrl = attendanceFormLinks.sheets[0];
+  }
+  updateTutorLinks(tutor, tutorFolder.getUrl(), paperworkLink, attendanceSheetUrl, timeRecordLinks.sheet);
 }
 
 /**
@@ -594,87 +606,99 @@ function createTimeRecord(tutor, tutorFolder, templateFolder) {
  */
 function createAttendanceForm(tutor, tutorFolder, templateFolder) {
   // Store any links created in this object
-  const links = {};
-  // Find the attendance form template and duplicate it
-  const template = getChildFileRegex(templateFolder, /Student Attendance/);
-  const file = template.makeCopy(
-    template.getName()
+  const links = {"forms": [], "sheets": []};
+  // Put the attendance sheets in a folder
+  const attendanceFolder = getChildFolder(tutorFolder, "Attendance Sheets", true);
+  links.folder = attendanceFolder.getUrl();
+  // Create an attendance form and sheet for each professor the tutor works with
+  for (let professorName of tutor.getProfessorNames()) {
+    const courses = tutor.courses.filter(x => x.professor.name === professorName);
+    // Find the attendance form template and duplicate it
+    const template = getChildFileRegex(templateFolder, /Student Attendance/);
+    const file = template.makeCopy(
+      template.getName()
+        .replaceAll("{semester}", getSetting("Semester"))
+        .replaceAll("{tutorName}", tutor.name)
+        .replaceAll("{professorName}", professorName)
+        .replaceAll("{courseCRNs}", courses.map(x => x.courseCRN).join("/")),
+      tutorFolder
+    );
+    const form = FormApp.openByUrl(file.getUrl());
+    links.forms.push(form.getPublishedUrl());
+
+    // Set the new title to use the tutor name
+    let title = form.getTitle();
+    let newTitle = title
       .replaceAll("{semester}", getSetting("Semester"))
       .replaceAll("{tutorName}", tutor.name)
-      .replaceAll("{courseCRNs}", tutor.courses.map(x => x.courseCRN).join("/")),
-    tutorFolder
-  );
-  const form = FormApp.openByUrl(file.getUrl());
-  links.form = form.getPublishedUrl();
+      .replaceAll("{professorName}", professorName)
+      .replaceAll("{courseCRNs}", courses.map(x => x.courseCRN).join("/"));
+    form.setTitle(newTitle);
 
-  // Set the new title to use the tutor name
-  let title = form.getTitle();
-  let newTitle = title
-    .replaceAll("{semester}", getSetting("Semester"))
-    .replaceAll("{tutorName}", tutor.name)
-    .replaceAll("{courseCRNs}", tutor.courses.map(x => x.courseCRN).join("/"));
-  form.setTitle(newTitle);
-
-  // Set the week select question
-  for (let item of form.getItems()) {
-    let title = item.getTitle();
-    if (title === "Week") {
-      let weekSelect = item.asListItem();
-      createWeekDropdown(weekSelect);
-      break;
+    // Set the week select question
+    for (let item of form.getItems()) {
+      let title = item.getTitle();
+      if (title === "Week") {
+        let weekSelect = item.asListItem();
+        createWeekDropdown(weekSelect);
+        break;
+      }
     }
-  }
 
-  // For each course, create a question
-  // Save the index of the questions
-  const courseIdxs = [];
-  for (const course of tutor.courses) {
-    const courseStr = `${course.name} (${course.courseCRN}) ${course.professor.name} ${course.days} ${course.times}`;
-    const questionStr = courseStr + " - Select all students who attended the group session:";
-    const item = form.addCheckboxItem();
-    item.setTitle(questionStr);
-    form.moveItem(item.getIndex(), form.getItems().length - 2)
-    courseIdxs.push(item.getIndex());
-  }
+    // For each course, create a question
+    // Save the index of the questions
+    const courseIdxs = [];
+    for (const course of courses) {
+      const courseStr = `${course.name} (${course.courseCRN}) ${course.professor.name} ${course.days} ${course.times}`;
+      const questionStr = courseStr + " - Select all students who attended the group session:";
+      const item = form.addCheckboxItem();
+      item.setTitle(questionStr);
+      form.moveItem(item.getIndex(), form.getItems().length - 2)
+      courseIdxs.push(item.getIndex());
+    }
 
-  // Create a linked spreadsheet and save the url
-  links.sheet = createLinkedSheet(file, form, tutorFolder);
-  // Add attendance summary sheets with formulas to the spreadsheet
-  const attendanceSS = SpreadsheetApp.openByUrl(links.sheet);
-  const responseSheet = attendanceSS.getSheetByName("Form Responses 1");
-  for (let i = 0; i < tutor.courses.length; i++) {
-    const course = tutor.courses[i];
-    // Use the position of the question in the form to form to infer the column
-    const courseIdx = courseIdxs[i];
-    const courseCol = courseIdx + 2;
-    // Get the column letter(s) where student names are entered
-    const courseColLetter = responseSheet
-      .getRange(1, courseCol)
-      .getA1Notation()
-      .replace(/\d+/, "");
-    const courseColA1 = `'Form Responses 1'!$${courseColLetter}$2:$${courseColLetter}`
-    const sheetName = `${course.name} ${course.professor.name} (${course.courseCRN})`;
-    const sheet = attendanceSS.insertSheet(sheetName);
-    // Increase the width of the first column
-    sheet.setColumnWidth(1, 300);
-    // Set the column headers
-    sheet.getRange(1, 1, 1, 3)
-      .setValues([["Student", "Total Hours", "Total Sessions"]]);
-    // Set the student list formula
-    const studentFormula = `=SORT(UNIQUE(FLATTEN(IFERROR(ARRAYFORMULA(SPLIT(INDIRECT("${courseColA1}"), ", ", FALSE))))), 1, TRUE)`;
-    sheet.getRange(2, 1)
-      .setFormula(studentFormula);
-    // Set the total hour calculating formula, setting the number format to 2 decimal places
-    const hourFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(24*TIMEVALUE(FILTER(INDIRECT("'Form Responses 1'!$F$2:$F"), FIND(A2, INDIRECT("${courseColA1}"))) - FILTER(INDIRECT("'Form Responses 1'!$E$2:$E"), FIND(A2, INDIRECT("${courseColA1}")))))))`;
-    sheet.getRange(2, 2)
-      .setFormula(hourFormula)
-      .setNumberFormat("0.00")
-      .copyTo(sheet.getRange(2, 2, 500));
-    // Set the total session count formula
-    const sessionFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(COUNT(FILTER(INDIRECT("'Form Responses 1'!$A$2:$A"), FIND(A2, INDIRECT("${courseColA1}")))))))`;
-    sheet.getRange(2, 3)
-      .setFormula(sessionFormula)
-      .copyTo(sheet.getRange(2, 3, 500));
+    // Create a linked spreadsheet and save the url
+    let sheetUrl = createLinkedSheet(file, form, attendanceFolder);
+    links.sheets.push(sheetUrl);
+    // Add attendance summary sheets with formulas to the spreadsheet
+    const attendanceSS = SpreadsheetApp.openByUrl(sheetUrl);
+    const responseSheet = attendanceSS.getSheetByName("Form Responses 1");
+    for (let i = 0; i < courses.length; i++) {
+      const course = courses[i];
+      // Add the attendance sheet url to the schedule sheet
+      course.attendanceSheetCell.setValue(sheetUrl);
+      // Use the position of the question in the form to form to infer the column
+      const courseIdx = courseIdxs[i];
+      const courseCol = courseIdx + 2;
+      // Get the column letter(s) where student names are entered
+      const courseColLetter = responseSheet
+        .getRange(1, courseCol)
+        .getA1Notation()
+        .replace(/\d+/, "");
+      const courseColA1 = `'Form Responses 1'!$${courseColLetter}$2:$${courseColLetter}`
+      const sheetName = `${course.name} ${course.professor.name} (${course.courseCRN})`;
+      const sheet = attendanceSS.insertSheet(sheetName);
+      // Increase the width of the first column
+      sheet.setColumnWidth(1, 300);
+      // Set the column headers
+      sheet.getRange(1, 1, 1, 3)
+        .setValues([["Student", "Total Hours", "Total Sessions"]]);
+      // Set the student list formula
+      const studentFormula = `=SORT(UNIQUE(FLATTEN(IFERROR(ARRAYFORMULA(SPLIT(INDIRECT("${courseColA1}"), ", ", FALSE))))), 1, TRUE)`;
+      sheet.getRange(2, 1)
+        .setFormula(studentFormula);
+      // Set the total hour calculating formula, setting the number format to 2 decimal places
+      const hourFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(24*TIMEVALUE(FILTER(INDIRECT("'Form Responses 1'!$F$2:$F"), FIND(A2, INDIRECT("${courseColA1}"))) - FILTER(INDIRECT("'Form Responses 1'!$E$2:$E"), FIND(A2, INDIRECT("${courseColA1}")))))))`;
+      sheet.getRange(2, 2)
+        .setFormula(hourFormula)
+        .setNumberFormat("0.00")
+        .copyTo(sheet.getRange(2, 2, 500));
+      // Set the total session count formula
+      const sessionFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(COUNT(FILTER(INDIRECT("'Form Responses 1'!$A$2:$A"), FIND(A2, INDIRECT("${courseColA1}")))))))`;
+      sheet.getRange(2, 3)
+        .setFormula(sessionFormula)
+        .copyTo(sheet.getRange(2, 3, 500));
+    }
   }
   
   // Return the links
@@ -755,8 +779,6 @@ function createPaperworkDoc(tutor, tutorFolder, templateFolder, timeRecordLinks,
   const body = doc.getBody();
 
   // Define the url replacements to make
-  injectLink(body, "{attendanceForm}", "Attendance Form", attendanceFormLinks.form);
-  injectLink(body, "{attendanceSheet}", "Attendance Sheet", attendanceFormLinks.sheet);
   injectLink(body, "{timecardForm}", "Timecard Form", timeRecordLinks.form);
   injectLink(body, "{timecardSheet}", "Timecard Sheet", timeRecordLinks.sheet);
   injectLink(body, "{studentAvailabilityForm}", "Student Availability Form", availabilitySurveyLinks.editForm);
@@ -777,6 +799,27 @@ function createPaperworkDoc(tutor, tutorFolder, templateFolder, timeRecordLinks,
       .getParent()
       .getParent()
       .removeFromParent();
+  }
+
+  // If there is only one attendance form+sheet, then simply make one replacement
+  // Otherwise, make a link for each professor
+  if (attendanceFormLinks.forms.length === 1) {
+    injectLink(body, "{attendanceForm}", "Attendance Form", attendanceFormLinks.forms[0]);
+    injectLink(body, "{attendanceSheet}", "Attendance Sheet", attendanceFormLinks.sheets[0]);
+  }
+  else {
+    const professorNames = tutor.getProfessorNames();
+    replaceDocText(body, "{attendanceForm}", `Attendance Forms:\n${professorNames.map(x => `{AF ${x}}`).join("\n")}`);
+    replaceDocText(body, "{attendanceSheet}", `Attendance Sheets:\n${professorNames.map(x => `{AS ${x}}`).join("\n")}`);
+    for (let i = 0; i < attendanceFormLinks.forms.length; i++) {
+      let formUrl = attendanceFormLinks.forms[i];
+      let sheetUrl = attendanceFormLinks.sheets[i];
+      let professorName = professorNames[i];
+      let formPattern = `{AF ${professorName}}`;
+      let sheetPattern = `{AS ${professorName}}`;
+      injectLink(body, formPattern, professorName, formUrl);
+      injectLink(body, sheetPattern, professorName, sheetUrl);
+    }
   }
 
   // If there is only one assignment letter, then simply make one replacement
@@ -809,7 +852,7 @@ function createAssignmentLetters(tutor, tutorFolder, templateFolder, availabilit
   // Make a list of each assignment letter url
   const links = [];
   // Create an assignment letter for each professor
-  for (let professorName of tutor.getProfessorNames()) {
+  for (let [i, professorName] of tutor.getProfessorNames().entries()) {
     const courses = tutor.courses.filter(x => x.professor.name === professorName);
     // Find the assignment letter doc template and duplicate it
     const assignmentLetterTemplate = getChildFileRegex(templateFolder, /Assignment Letter/);
@@ -838,7 +881,7 @@ function createAssignmentLetters(tutor, tutorFolder, templateFolder, availabilit
     replaceDocText(body, "{observationHours}", courses[0].observationHours);
     replaceDocText(body, "{trainingHours}", courses[0].trainingHours);
     replaceDocText(body, "{totalHours}", courses[0].totalHours);
-    injectLink(body, "{attendanceSheet}", "attendance sheet", attendanceFormLinks.sheet);
+    injectLink(body, "{attendanceSheet}", "attendance sheet", attendanceFormLinks.sheets[i]);
 
     // Add extra rows in the course table if needed, then make the text replacements
     let courseTable = body.getTables()[0];
