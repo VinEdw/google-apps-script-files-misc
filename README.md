@@ -86,6 +86,13 @@ The "Paperwork Submissions" folder should have two child folders ("HUM" & "STEM"
 Once all the data in the spreadsheet is filled out and the templates are adjusted to the current semester, the script can be run to create paperwork docs customized to a specific tutor.
 The script must be run once for each tutor, as this allows flexibility in case new tutors are added.
 
+## prep-sheet-catalog
+
+This script was made to help with managing prep sheets submitted through a Google Form.
+Prep sheets are in a "database" folder, organized into subfolders by subject and semester.
+This script is bound to a spreadsheet, and when run it makes a sorted list of prep sheets present.
+This allows for users to search the spreadsheet catalog for prep sheets, rather than searching through the Drive folder.
+
 ## prep-sheet-mover
 
 This script was made to help with managing prep sheets submitted through a Google Form.
