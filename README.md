@@ -102,6 +102,12 @@ Afterwards, the script moves the prep sheet from the default landing folder to t
 Prep sheets are organized by subject and semester in that folder.
 Any external links to Google Drive files found in the prep sheet are duplicated, and the links in the prep sheet are updated to point to the new copies.
 
+## si-accreditation
+
+This script, bound to a Google Sheet, was made to help with combining data from multiple sources for SI accreditation purposes.
+It pulls data from spreadsheets with grades, student attendance and hours worked.
+It copies the data needed and puts it in a sheet tab with all the compiled information.
+
 ## spreadsheet-clear-button
 
 The script is bound to a *Google Sheet*.
