@@ -124,7 +124,7 @@ function getCourseData() {
     gradeMap.set("C", 2);
     gradeMap.set("D", 1);
     gradeMap.set("F", 0);
-    gradeMap.set("W", 0);
+    gradeMap.set("W", "W");
     const gradeNumber = gradeMap.get(gradeLetter);
 
     // Get the total hours & total number of session
