@@ -67,7 +67,7 @@ function getCourseData() {
 
   // Get the total number of session hours offered
   const courseName = activeRowValues[courseCols.courseName];
-  const crn = courseName.match(/\d{5}/);
+  const crn = courseName.match(/\((\d+)\)/)[1];
   // Open the timecard sheet
   const timecardUrl = activeRowValues[courseCols.timecardSheet];
   const timecardSS = SpreadsheetApp.openByUrl(timecardUrl);
