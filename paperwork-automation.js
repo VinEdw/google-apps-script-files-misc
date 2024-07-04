@@ -553,7 +553,7 @@ function createTimeRecord(tutor, tutorFolder, templateFolder) {
       sectionSelect.setChoices(choices);
     }
     else if (title === "Duty performed") {
-      let dutySelect = item.asCheckboxItem();
+      let dutySelect = item.asMultipleChoiceItem();
       if (!tutor.isTutorType("SI")) {
         let choices = dutySelect.getChoices();
         const siDuties = ["Prep", "Observation", "Observation Debrief"];
