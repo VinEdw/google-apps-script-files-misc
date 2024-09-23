@@ -678,26 +678,37 @@ function createAttendanceForm(tutor, tutorFolder, templateFolder) {
       const courseColA1 = `'Form Responses 1'!$${courseColLetter}$2:$${courseColLetter}`
       const sheetName = `${course.name} ${course.professor.name} (${course.courseCRN})`;
       const sheet = attendanceSS.insertSheet(sheetName);
+      const formulaCount = 500;
       // Increase the width of the first column
       sheet.setColumnWidth(1, 300);
       // Set the column headers
-      sheet.getRange(1, 1, 1, 3)
-        .setValues([["Student", "Total Hours", "Total Sessions"]]);
+      const columnHeaders = ["Student", "Total Hours", "Total Sessions", "Stayed ≥ 0.5 hr", "Stayed ≥ 1.0 hr", "Stayed ≥ 1.5 hr", "Stayed ≥ 2.0 hr"];
+      sheet.getRange(1, 1, 1, columnHeaders.length)
+        .setValues([columnHeaders]);
       // Set the student list formula
       const studentFormula = `=SORT(UNIQUE(FLATTEN(IFERROR(ARRAYFORMULA(SPLIT(INDIRECT("${courseColA1}"), ", ", FALSE))))), 1, TRUE)`;
       sheet.getRange(2, 1)
         .setFormula(studentFormula);
       // Set the total hour calculating formula, setting the number format to 2 decimal places
-      const hourFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(24*TIMEVALUE(FILTER(INDIRECT("'Form Responses 1'!$F$2:$F"), FIND(A2, INDIRECT("${courseColA1}"))) - FILTER(INDIRECT("'Form Responses 1'!$E$2:$E"), FIND(A2, INDIRECT("${courseColA1}")))))))`;
+      const hourFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(FILTER(24*TIMEVALUE(INDIRECT("'Form Responses 1'!$F$2:$F")-INDIRECT("'Form Responses 1'!$E$2:$E")), FIND(A2, INDIRECT("${courseColA1}"))))))`;
       sheet.getRange(2, 2)
         .setFormula(hourFormula)
         .setNumberFormat("0.00")
-        .copyTo(sheet.getRange(2, 2, 500));
+        .copyTo(sheet.getRange(2, 2, formulaCount));
       // Set the total session count formula
       const sessionFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(COUNT(FILTER(INDIRECT("'Form Responses 1'!$A$2:$A"), FIND(A2, INDIRECT("${courseColA1}")))))))`;
       sheet.getRange(2, 3)
         .setFormula(sessionFormula)
-        .copyTo(sheet.getRange(2, 3, 500));
+        .copyTo(sheet.getRange(2, 3, formulaCount));
+      // Set the formulas to count the sessions attended for longer than a certain threshold
+      for (let j = 0; j < 4; j++) {
+        const threshold = 0.5 * (j + 1);
+        const col = 4 + j;
+        const thresholdFormula = `=IF(ISBLANK(A2), "", ARRAYFORMULA(SUM(COUNT(FILTER(INDIRECT("'Form Responses 1'!$A$2:$A"), FIND(A2, INDIRECT("${courseColA1}")), ARRAYFORMULA(24*TIMEVALUE(INDIRECT("'Form Responses 1'!$F$2:$F")-INDIRECT("'Form Responses 1'!$E$2:$E"))) >= ${threshold})))))`;
+        sheet.getRange(2, col)
+          .setFormula(thresholdFormula)
+          .copyTo(sheet.getRange(2, col, formulaCount));
+      }
     }
   }
   
