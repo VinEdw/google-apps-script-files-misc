@@ -36,6 +36,16 @@ If so, it logs and the current time and new count.
 In addition, it plays a short audio file.
 This audio file is saved in Google Drive and shared so that anyone can view.
 
+## geocode-addresses-and-assign-to-territories
+
+This script is bound to a *Google Sheet*.
+It provides a menu function to Geocode (i.e. get latitude and longitude coordinates for) addresses in the selected rows.
+It also provides a menu function to assign addresses in the selected rows to territories described in a designated sheet.
+These territories have polygon boundaries defined by a list of \[longitude, latitude\] points.
+Addresses are assigned to the first territory they fall within the bounds of.
+
+The address and territory sheets are formatted in such a way to be compatible with [NW Scheduler's CSV export/import features](https://nwscheduler.com/how-to/import-territories-from-csv/).
+
 ## hybrid-meeting-av-scheduling-tool
 
 This script is bound to a *Google Sheet*.
