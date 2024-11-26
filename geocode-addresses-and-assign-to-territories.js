@@ -1,6 +1,7 @@
 // Section: Column Names
 
 const addressCols = [
+  "ImportedSuccessfully",
   "TerritoryID",
   "TerritoryNumber",
   "Category",
