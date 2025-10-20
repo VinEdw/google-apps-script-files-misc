@@ -33,7 +33,7 @@ function getBrothers() {
   }
 
   class Brother {
-    constructor(id, lastName, firstName, name, shortName, host, sound, stage, lMicrophone, rMicrophone, zAttendant, fAttendant, sAttendant, totalGoal) {
+    constructor(id, lastName, firstName, name, shortName, host, sound, stage, lMicrophone, rMicrophone, zAttendant, eAttendant1, aAttendant1, eAttendant2, aAttendant2, totalGoal) {
       this.id = id;
       this.lastName = lastName;
       this.firstName = firstName;
@@ -46,8 +46,10 @@ function getBrothers() {
       this.lMicrophone = splitCountDay(lMicrophone);
       this.rMicrophone = splitCountDay(rMicrophone);
       this.zAttendant = splitCountDay(zAttendant);
-      this.fAttendant = splitCountDay(fAttendant);
-      this.sAttendant = splitCountDay(sAttendant);
+      this.eAttendant1 = splitCountDay(eAttendant1);
+      this.aAttendant1 = splitCountDay(aAttendant1);
+      this.eAttendant2 = splitCountDay(eAttendant2);
+      this.aAttendant2 = splitCountDay(aAttendant2);
 
       this.totalGoal = totalGoal;
     }
@@ -61,7 +63,7 @@ function getBrothers() {
 
   return {
     list: brothersList,
-    roles: ['host', 'sound', 'stage', 'lMicrophone', 'rMicrophone', 'zAttendant', 'fAttendant', 'fAttendant', 'sAttendant', 'sAttendant'],
+    roles: ['host', 'sound', 'stage', 'lMicrophone', 'rMicrophone', 'zAttendant', 'eAttendant1', 'aAttendant1', 'eAttendant2', 'aAttendant2'],
     getBrotherByName(name) {
       for (let i = 0; i < this.list.length; i++) {
         let bro = this.list[i];
