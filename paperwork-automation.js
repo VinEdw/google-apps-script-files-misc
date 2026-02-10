@@ -526,6 +526,8 @@ function createTimeRecord(tutor, tutorFolder, templateFolder) {
     tutorFolder
   );
   const form = FormApp.openByUrl(file.getUrl());
+  form.setPublished(true);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   links.form = form.getPublishedUrl();
 
   // Set the new title to use the tutor name
@@ -624,6 +626,8 @@ function createAttendanceForm(tutor, tutorFolder, templateFolder) {
       tutorFolder
     );
     const form = FormApp.openByUrl(file.getUrl());
+    form.setPublished(true);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     links.forms.push(form.getPublishedUrl());
 
     // Set the new title to use the tutor name
@@ -733,6 +737,8 @@ function createAvailabilitySurvey(tutor, tutorFolder, templateFolder) {
     tutorFolder
   );
   const form = FormApp.openByUrl(file.getUrl());
+  form.setPublished(true);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   links.viewForm = form.getPublishedUrl();
   links.editForm = form.getEditUrl();
 
